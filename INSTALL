@@ -1,4 +1,11 @@
-1. Configuration
+1. Dependencies
+
+  Before building rlcmp the shared library libavlbst needs to  be
+  installed.   Installation instructions are found on the project
+  page https://github.com/n-t-roff/libavlbst.
+
+
+2. Configuration
 
   The installation  paths  can  be  configured  in  the  makefile
   "in.mk".  There are four paths configureable:
@@ -9,7 +16,7 @@
      LIBDIR   Directory of the AVL library
 
 
-2. Installation
+3. Installation
 
   The tool is build with the commands:
 
@@ -25,7 +32,7 @@
      $ make clean
 
 
-3. Deinstallation
+4. Deinstallation
 
   At first a makefile needs to be generated with
 
