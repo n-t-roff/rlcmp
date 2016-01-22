@@ -1,0 +1,40 @@
+1. Configuration
+
+  The installation  paths  can  be  configured  in  the  makefile
+  "in.mk".  There are four paths configureable:
+
+     BINDIR   Directory for the tool itself
+     MANDIR   Directory for the man page
+     INCDIR   Directory of the AVL library include files
+     LIBDIR   Directory of the AVL library
+
+
+2. Installation
+
+  The tool is build with the commands:
+
+     $ ./configure
+     $ make
+
+  Installation usually has to be done as root:
+
+     # make install
+
+  Generated files are removed with
+
+     $ make clean
+
+
+3. Deinstallation
+
+  At first a makefile needs to be generated with
+
+     $ ./configure
+
+  Deinstallation is done as root with
+
+     # make uninstall
+
+  Then the generated makefile is removed with
+
+     $ make clean

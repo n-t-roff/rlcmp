@@ -1,0 +1,133 @@
+/*
+ * Copyright (c) 2016, Carsten Kunze
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <avlbst.h>
+#include <limits.h>
+#include "main.h"
+#include "dir.h"
+
+char *prog;
+char path1[PATH_SIZ];
+char path2[PATH_SIZ];
+size_t path1len;
+size_t path2len;
+size_t pagesiz;
+int exit_code;
+char **args;
+int cmp_perm;
+int cmp_time;
+int cmp_usr;
+int cmp_grp;
+
+static size_t getpath(char *, char *);
+
+int
+main(int argc, char **argv) {
+	static int noopts;
+	static char *s;
+	static int c;
+	prog = *argv++;
+	argc--;
+	while (!noopts && argc && *(s = *argv) == '-') {
+		while ((c = *(++s))) {
+			switch (c) {
+			case '-':
+				noopts = 1;
+				goto next;
+			case 'a':
+				cmp_perm = 1;
+				cmp_time = 1;
+				cmp_usr  = 1;
+				cmp_grp  = 1;
+				break;
+			case 'g':
+				cmp_grp  = 1;
+				break;
+			case 'm':
+				cmp_perm = 1;
+				break;
+			case 't':
+				cmp_time = 1;
+				break;
+			case 'u':
+				cmp_usr  = 1;
+				break;
+			default:
+				fprintf(stderr, "%s: Unknown option '%c'\n",
+				    prog, c);
+				return EXIT_ERROR;
+			}
+		}
+next:
+		argv++;
+		argc--;
+	}
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s [<options>] <file1> <file2>\n",
+		    prog);
+		return EXIT_ERROR;
+	}
+	args = argv;
+	path1len = getpath(*argv++, path1);
+	path2len = getpath(*argv++, path2);
+	if (path1len == path2len && !memcmp(path1, path2, path1len)) {
+		printf("\"%s\" and \"%s\" is the same file\n", *args,
+		    args[1]);
+		return 0;
+	}
+	errno = 0;
+	if ((pagesiz = sysconf(_SC_PAGESIZE)) == -1) {
+		fprintf(stderr, "%s: sysconf(_SC_PAGESIZE) failed: ", prog);
+		if (errno)
+			perror(NULL);
+		else
+			fputs("Not supported\n", stderr);
+		return EXIT_ERROR;
+	}
+	typetest(NULL);
+	return exit_code;
+}
+
+static size_t
+getpath(char *arg, char *buf) {
+	size_t l;
+	if (!realpath(arg, buf)) {
+		fprintf(stderr, "%s: realpath \"%s\" failed: %s\n",
+		    prog, arg, strerror(errno));
+		exit(EXIT_ERROR);
+	}
+	l = strlen(buf);
+	if (l > 1 && buf[l - 1] == '/')
+		l--;
+	buf[l] = 0;
+	return l;
+}

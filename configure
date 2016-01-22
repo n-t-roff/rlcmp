@@ -1,0 +1,30 @@
+#!/bin/sh
+# Generated with gen_configure 
+
+IN_MK=in.mk
+OUT_MK=Makefile
+
+rm -f $OUT_MK
+cat <<EOT >.tmp.c
+main(){}
+EOT
+
+if clang -c .tmp.c 2>/dev/null; then
+CC=clang
+elif gcc -c .tmp.c 2>/dev/null; then
+CC=gcc
+fi
+CFLAGS=""
+			cat <<EOT >.mk
+clean:
+				@echo \$(CFLAGS)
+EOT
+			if make -f .mk | grep -q -e -O; then true; else
+				CFLAGS="$CFLAGS -O2"
+			fi
+if [ -n "$CC" ]; then
+echo "CC=$CC" >> $OUT_MK
+fi
+echo "_CFLAGS_=$CFLAGS" >> $OUT_MK
+rm -f .tmp.[co] .mk
+cat $IN_MK >>$OUT_MK

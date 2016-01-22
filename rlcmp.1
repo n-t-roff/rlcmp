@@ -1,0 +1,59 @@
+.Dd January 6, 2016
+.Dt RLCMP 1
+.Sh NAME
+.Nm rlcmp
+.Nd recursive file compare
+.Sh SYNOPSIS
+.Nm
+.Op Fl agmtu
+.Op Fl Fl
+.Ar file1
+.Ar file2
+.Sh DESCRIPTION
+.Dq Nm
+means
+.Dq "recursive symbolic link compare" .
+Compared to
+.Xr diff 1
+which always follows symbolic links,
+.Nm
+is intended for a recursive directory compare which never
+follows symbolic links.
+.Pp
+.Nm
+stops a file compare when the first difference is found.
+It acts on files like a very simple version of
+.Xr cmp 1 .
+.Sh OPTIONS
+.Bl -tag -width ".It Fl m"
+.It Fl Fl
+Treat following arguments as filenames even if they begin with
+.Sq Fl .
+.It Fl a
+Same as option
+.Fl gmtu .
+.It Fl g
+Compare file group.
+.It Fl m
+Compare file permissions (except for symbolic links).
+.It Fl t
+Compare modification time (except for directories).
+.It Fl u
+Compare file owner.
+.El
+.Sh EXIT STATUS
+.Nm
+exits 0 if no difference is found,
+1 on a difference,
+and 2 if an error occurs.
+.Sh BUGS
+.Nm
+is primarily intended to compare regular files, symbolic links and
+directories.
+By intention
+.Nm
+does currently not always sort it's output.
+Sorting will only be implemented if there is good reason.
+.Sh SEE ALSO
+.Xr diff 1 ,
+.Xr cmp 1
