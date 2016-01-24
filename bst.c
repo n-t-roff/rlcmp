@@ -59,17 +59,3 @@ go_up:
 		goto proc_data;
 	goto go_up;
 }
-
-/* Call with n = tree.root and d = 0.
- * Returns the number of nodes found. */
-
-int
-dumptree(struct bst_node *n, int d) {
-	int i;
-	if (!n)
-		return 0;
-	d++;
-	i = dumptree(n->left, d);
-	printf("%*c%s\n", d * 4 - 3, ' ', (char *)n->key.p);
-	return 1 + i + dumptree(n->right, d);
-}

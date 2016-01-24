@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+/* because dir.h included below uses avlbst types */
 #include <avlbst.h>
 #include <limits.h>
 #include "main.h"
