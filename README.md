@@ -1,5 +1,5 @@
 # rlcmp
-`rlcmp` is simple recursive file compare tool which (in contrast to `diff`(1)) never follows symbolic links.
+`rlcmp` is simple recursive file compare tool for UNIX systems which (in contrast to `diff`(1)) never follows symbolic links.
 The tool can be used to check the integrity of local backups or doing verified data moves between different
 local file systems with a sequence `cp -RpP` ..., `rlcmp` ..., `rm -rf`... .
 
