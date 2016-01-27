@@ -12,3 +12,5 @@ extern int cmp_perm;
 extern int cmp_time;
 extern int cmp_usr;
 extern int cmp_grp;
+extern int cmp_depth;
+extern int depth;

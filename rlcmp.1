@@ -1,4 +1,4 @@
-.Dd January 6, 2016
+.Dd January 27, 2016
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
@@ -6,6 +6,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl agmtu
+.Op Fl d Ar depth
 .Op Fl Fl
 .Ar file1
 .Ar file2
@@ -32,6 +33,15 @@ Treat following arguments as filenames even if they begin with
 .It Fl a
 Same as option
 .Fl gmtu .
+.It Fl d Ar depth
+Limit recursion
+.Ar depth .
+A
+.Ar depth
+of
+.Li 0
+means that directories are only entered when they are given as a command
+line argument.
 .It Fl g
 Compare file group.
 .It Fl m

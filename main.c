@@ -47,8 +47,11 @@ int cmp_perm;
 int cmp_time;
 int cmp_usr;
 int cmp_grp;
+int cmp_depth;
+int depth;
 
 static size_t getpath(char *, char *);
+static void usage(char *);
 
 int
 main(int argc, char **argv) {
@@ -59,6 +62,7 @@ main(int argc, char **argv) {
 	argc--;
 	while (!noopts && argc && *(s = *argv) == '-') {
 		while ((c = *(++s))) {
+			static char *arg;
 			switch (c) {
 			case '-':
 				noopts = 1;
@@ -69,6 +73,17 @@ main(int argc, char **argv) {
 				cmp_usr  = 1;
 				cmp_grp  = 1;
 				break;
+			case 'd':
+				cmp_depth = 1;
+				arg = ++s;
+				if (!(c = *arg) && --argc) {
+					arg = *(++argv);
+					c = *arg;
+				}
+				if (c < '0' || c > '9')
+					usage("Option -d needs a number as argument");
+				depth = atoi(arg);
+				goto next;
 			case 'g':
 				cmp_grp  = 1;
 				break;
@@ -91,11 +106,8 @@ next:
 		argv++;
 		argc--;
 	}
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s [<options>] <file1> <file2>\n",
-		    prog);
-		return EXIT_ERROR;
-	}
+	if (argc != 2)
+		usage("Wrong number of arguments");
 	args = argv;
 	path1len = getpath(*argv++, path1);
 	path2len = getpath(*argv++, path2);
@@ -130,4 +142,12 @@ getpath(char *arg, char *buf) {
 		l--;
 	buf[l] = 0;
 	return l;
+}
+
+static void
+usage(char *s) {
+	fprintf(stderr,
+	    "%s: %s\nUsage: %s [-agmtu-] [-d<depth>] <file1> <file2>\n",
+	    prog, s, prog);
+	exit(EXIT_ERROR);
 }

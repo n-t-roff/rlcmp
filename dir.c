@@ -251,7 +251,14 @@ delfile(struct bst *t, struct bst_node *n) {
 static void
 procdir(struct bst_node *n) {
 	size_t l;
-	char *s = (char *)n->key.p;
+	char *s;
+	if (cmp_depth) {
+		if (depth)
+			depth--;
+		else
+			return;
+	}
+	s = (char *)n->key.p;
 	l = strlen(s);
 	if (path1len + l > PATH_SIZ) {
 		pathtoolong(path1, s);
@@ -272,6 +279,7 @@ procdir(struct bst_node *n) {
 	path2len -= l;
 	path1[path1len] = 0;
 	path2[path2len] = 0;
+	depth++;
 }
 
 static void
