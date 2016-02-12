@@ -3,7 +3,7 @@
 The tool can be used to check the integrity of local backups or doing verified data moves between different
 local file systems with a sequence `cp -RpP` ..., `rlcmp` ..., `rm -rf`... .
 
-Due to the limited functionality of `rlcmp` it is about ten times faster than `diff`(1).
+Due to the limited functionality of `rlcmp` it is several times faster than `diff`(1).
 So for simple file or directory integrity tests with just a pass/fail result it can be used as a fast alternative.
 
 Additional information can be found in the [manual page](http://n-t-roff.github.io/rlcmp.1.html)
