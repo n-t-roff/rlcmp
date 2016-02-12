@@ -1,2 +1,2 @@
-void filediff(void);
-void linkdiff(void);
+int filediff(void);
+int linkdiff(void);

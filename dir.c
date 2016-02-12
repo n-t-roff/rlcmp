@@ -34,6 +34,9 @@
 #include <sys/stat.h>
 #include <avlbst.h>
 #include <limits.h>
+#include <time.h>
+#include <pwd.h>
+#include <grp.h>
 #include "main.h"
 #include "dir.h"
 #include "bst.h"
@@ -47,6 +50,14 @@ static void procdir(struct bst_node *);
 static void deldir(struct bst *, struct bst_node *);
 static int name_cmp(union bst_val, union bst_val);
 static void pathtoolong(char *, char *);
+static void print_time(time_t);
+static void print_type(mode_t);
+static void print_uid(uid_t);
+static void print_gid(gid_t);
+static void time_cmp(void);
+static void perm_cmp(void);
+static void usr_cmp(void);
+static void grp_cmp(void);
 
 static struct bst dirents = { NULL, name_cmp };
 static DIR *dir;
@@ -143,74 +154,156 @@ typetest(struct bst_node *n) {
 		exit(EXIT_ERROR);
 	}
 	if ((stat1.st_mode & S_IFMT) != (stat2.st_mode & S_IFMT)) {
-		printf("Different file types for %s and %s\n", path1, path2);
-		EXIT_DIFF();
+		printf("Different file types for %s (", path1);
+		print_type(stat1.st_mode);
+		printf(") and %s (", path2);
+		print_type(stat2.st_mode);
+		printf(")\n");
+		SET_EXIT_DIFF();
 		if (n)
 			n->data.i = DEL_NODE;
 		return;
-	}
-	if (cmp_time && !S_ISDIR(stat1.st_mode) &&
-	    (stat1.st_mtime != stat2.st_mtime)) {
-		printf("Different modification time for %s and %s\n", path1,
-		    path2);
-		EXIT_DIFF();
-		if (n)
-			n->data.i = DEL_NODE;
-		return;
-	}
-	if (cmp_perm && !S_ISLNK(stat1.st_mode) &&
-	    (stat1.st_mode != stat2.st_mode)) {
-		printf("Different permissions for %s and %s\n", path1, path2);
-		EXIT_DIFF();
-		if (!S_ISDIR(stat1.st_mode)) {
-			if (n)
-				n->data.i = DEL_NODE;
-			return;
-		}
-	}
-	if (cmp_usr && (stat1.st_uid != stat2.st_uid)) {
-		printf("Different file owner for %s and %s\n", path1, path2);
-		EXIT_DIFF();
-		if (!S_ISDIR(stat1.st_mode)) {
-			if (n)
-				n->data.i = DEL_NODE;
-			return;
-		}
-	}
-	if (cmp_grp && (stat1.st_gid != stat2.st_gid)) {
-		printf("Different group ID for %s and %s\n", path1, path2);
-		EXIT_DIFF();
-		if (!S_ISDIR(stat1.st_mode)) {
-			if (n)
-				n->data.i = DEL_NODE;
-			return;
-		}
 	}
 	if (S_ISDIR(stat1.st_mode)) {
 		if (!n) /* Called from main() */
 			dircmp();
+		if (cmp_perm)
+			perm_cmp();
+		if (cmp_usr)
+			usr_cmp();
+		if (cmp_grp)
+			grp_cmp();
 		return;
 	}
 	if (n)
 		n->data.i = DEL_NODE;
 	if (stat1.st_size != stat2.st_size) {
-		printf("Different sizes for %s and %s\n", path1, path2);
-		EXIT_DIFF();
+		printf("Different sizes for ");
+		print_type(stat1.st_mode);
+		printf("s %s (%ju) and %s (%ju)\n", path1, stat1.st_size,
+		    path2, stat2.st_size);
+		SET_EXIT_DIFF();
 		return;
 	}
-	if (!stat1.st_size)
-		return;
-	if (S_ISREG(stat1.st_mode))
-		filediff();
-	else if (S_ISLNK(stat1.st_mode))
-		linkdiff();
-	else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
+	if (S_ISREG(stat1.st_mode)) {
+		if (stat1.st_size && filediff())
+			return;
+	} else if (S_ISLNK(stat1.st_mode)) {
+		if (stat1.st_size && linkdiff())
+			return;
+	} else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
 		if (stat1.st_rdev != stat2.st_rdev) {
-			printf("Different special devices %s and %s\n", path1,
-			    path2);
-			EXIT_DIFF();
+			printf("Different %s devices %s (%u, %u) and "
+			    "%s (%u, %u)\n",
+			    S_ISCHR(stat1.st_mode) ? "character" : "block",
+			    path1, major(stat1.st_rdev), minor(stat1.st_rdev),
+			    path2, major(stat2.st_rdev), minor(stat2.st_rdev));
+			SET_EXIT_DIFF();
+			return;
 		}
 	}
+	if (cmp_time)
+		time_cmp();
+	if (cmp_perm)
+		perm_cmp();
+	if (cmp_usr)
+		usr_cmp();
+	if (cmp_grp)
+		grp_cmp();
+}
+
+static void
+time_cmp(void) {
+	if (stat1.st_mtime != stat2.st_mtime) {
+		printf("Different modification time for %s (", path1);
+		print_time(stat1.st_mtime);
+		printf(") and %s (", path2);
+		print_time(stat2.st_mtime);
+		printf(")\n");
+		SET_EXIT_DIFF();
+	}
+}
+
+static void
+perm_cmp(void) {
+	if (!S_ISLNK(stat1.st_mode) && (stat1.st_mode != stat2.st_mode)) {
+		printf("Different permissions for %s (%04o) and %s (%04o)\n",
+		    path1, stat1.st_mode & 07777, path2, stat2.st_mode &
+		    07777);
+		SET_EXIT_DIFF();
+	}
+}
+
+static void
+usr_cmp(void) {
+	if (stat1.st_uid != stat2.st_uid) {
+		printf("Different file owner for %s (", path1);
+		print_uid(stat1.st_uid);
+		printf(") and %s (", path2);
+		print_uid(stat2.st_uid);
+		printf(")\n");
+		SET_EXIT_DIFF();
+	}
+}
+
+static void
+grp_cmp(void) {
+	if (stat1.st_gid != stat2.st_gid) {
+		printf("Different group ID for %s (", path1);
+		print_gid(stat1.st_gid);
+		printf(") and %s (", path2);
+		print_gid(stat2.st_gid);
+		printf(")\n");
+		SET_EXIT_DIFF();
+	}
+}
+
+static void
+print_type(mode_t m) {
+	if      (S_ISREG(m))
+		fputs("regular file", stdout);
+	else if (S_ISDIR(m))
+		fputs("directory", stdout);
+	else if (S_ISLNK(m))
+		fputs("symbolic link", stdout);
+	else if (S_ISCHR(m))
+		fputs("character device", stdout);
+	else if (S_ISBLK(m))
+		fputs("block device", stdout);
+	else if (S_ISFIFO(m))
+		fputs("FIFO", stdout);
+	else if (S_ISSOCK(m))
+		fputs("socket", stdout);
+	else
+		fputs("unknown", stdout);
+}
+
+static void
+print_time(time_t t) {
+	struct tm *tm;
+	tm = localtime(&t);
+	if (time(NULL) - t > 18 * 3600)
+		printf("%d-%02d-%02d ", tm->tm_year + 1900,
+		    tm->tm_mon + 1, tm->tm_mday);
+	printf("%d:%02d", tm->tm_hour, tm->tm_min);
+}
+
+static void
+print_uid(uid_t u) {
+	struct passwd *p;
+	if ((p = getpwuid(u)))
+		fputs(p->pw_name, stdout);
+	else
+		printf("%d", u);
+}
+
+static void
+print_gid(gid_t g) {
+	struct group *p;
+	if ((p = getgrgid(g)))
+		fputs(p->gr_name, stdout);
+	else
+		printf("%d", g);
 }
 
 static void

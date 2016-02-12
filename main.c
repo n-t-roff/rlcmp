@@ -32,6 +32,8 @@
 #include <unistd.h>
 #include <avlbst.h>
 #include <limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "main.h"
 #include "dir.h"
 
@@ -133,11 +135,19 @@ static size_t
 getpath(char *arg, char *buf) {
 	size_t l;
 	if (!realpath(arg, buf)) {
+		if (errno == ENOENT && !lstat(arg, &stat1) &&
+		    S_ISLNK(stat1.st_mode)) {
+			if ((l = strlen(arg)))
+				memcpy(buf, arg, l);
+			buf[l] = 0;
+			goto a;
+		}
 		fprintf(stderr, "%s: realpath \"%s\" failed: %s\n",
 		    prog, arg, strerror(errno));
 		exit(EXIT_ERROR);
 	}
 	l = strlen(buf);
+a:
 	if (l > 1 && buf[l - 1] == '/')
 		l--;
 	buf[l] = 0;

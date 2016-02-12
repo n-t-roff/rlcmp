@@ -39,16 +39,19 @@
 #include "main.h"
 #include "dir.h"
 
-void
+/* Returns -1 on error, 1 for difference and 0 else. */
+
+int
 filediff(void) {
 	int fd1, fd2;
 	off_t offs, left;
 	size_t len;
 	char *buf1, *buf2;
+	int diff = 0;
 	if ((fd1 = open(path1, O_RDONLY)) == -1) {
 		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
-		return;
+		return -1;
 	}
 	if ((fd2 = open(path1, O_RDONLY)) == -1) {
 		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
@@ -73,7 +76,8 @@ filediff(void) {
 		}
 		if (memcmp(buf1, buf2, len)) {
 			printf("Different files %s and %s\n", path1, path2);
-			EXIT_DIFF();
+			SET_EXIT_DIFF();
+			diff = 1;
 			left = len;
 		}
 		if (msync(buf1, len, MS_INVALIDATE) == -1) {
@@ -108,9 +112,12 @@ cls1:
 		    path1, strerror(errno));
 		exit(EXIT_ERROR);
 	}
+	return diff;
 }
 
-void
+/* Returns -1 on error, 1 for difference and 0 else. */
+
+int
 linkdiff(void) {
 	static char buf1[PATH_SIZ];
 	static char buf2[PATH_SIZ];
@@ -118,20 +125,24 @@ linkdiff(void) {
 	if ((l1 = readlink(path1, buf1, sizeof buf1)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
-		return;
+		return -1;
 	}
 	if ((l2 = readlink(path2, buf2, sizeof buf2)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
-		return;
+		return -1;
 	}
 	if (l1 != l2) {
-		printf("Different link length for %s and %s\n", path1, path2);
-		EXIT_DIFF();
-		return;
+		printf("Different link length for %s (%zu) and %s (%zu)\n",
+		    path1, l1, path2, l2);
+		SET_EXIT_DIFF();
+		return 1;
 	}
 	if (memcmp(buf1, buf2, l1)) {
-		printf("Different symlinks %s and %s\n", path1, path2);
-		EXIT_DIFF();
+		printf("Different symlinks %s -> %s and %s -> %s\n",
+		    path1, buf1, path2, buf2);
+		SET_EXIT_DIFF();
+		return 1;
 	}
+	return 0;
 }

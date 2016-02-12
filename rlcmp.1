@@ -1,4 +1,4 @@
-.Dd January 27, 2016
+.Dd February 12, 2016
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
@@ -13,7 +13,7 @@
 .Sh DESCRIPTION
 .Dq Nm
 means
-.Dq "recursive symbolic link compare" .
+.Do recursive symbolic link Xr cmp 1 Dc .
 Compared to
 .Xr diff 1
 which always follows symbolic links,
@@ -57,9 +57,6 @@ exits 0 if no difference is found,
 1 on a difference,
 and 2 if an error occurs.
 .Sh BUGS
-.Nm
-is primarily intended to compare regular files, symbolic links and
-directories.
 By intention
 .Nm
 does currently not always sort it's output.
