@@ -51,7 +51,7 @@ static void deldir(struct bst *, struct bst_node *);
 static int name_cmp(union bst_val, union bst_val);
 static void pathtoolong(char *, char *);
 static void print_time(time_t);
-static void print_type(mode_t);
+static void print_type(mode_t, int);
 static void print_uid(uid_t);
 static void print_gid(gid_t);
 static void time_cmp(void);
@@ -155,9 +155,9 @@ typetest(struct bst_node *n) {
 	}
 	if ((stat1.st_mode & S_IFMT) != (stat2.st_mode & S_IFMT)) {
 		printf("Different file types for %s (", path1);
-		print_type(stat1.st_mode);
+		print_type(stat1.st_mode, 0);
 		printf(") and %s (", path2);
-		print_type(stat2.st_mode);
+		print_type(stat2.st_mode, 0);
 		printf(")\n");
 		SET_EXIT_DIFF();
 		if (n)
@@ -179,7 +179,7 @@ typetest(struct bst_node *n) {
 		n->data.i = DEL_NODE;
 	if (stat1.st_size != stat2.st_size) {
 		printf("Different sizes for ");
-		print_type(stat1.st_mode);
+		print_type(stat1.st_mode, 1);
 		printf("s %s (%ju) and %s (%ju)\n", path1, stat1.st_size,
 		    path2, stat2.st_size);
 		SET_EXIT_DIFF();
@@ -215,7 +215,9 @@ typetest(struct bst_node *n) {
 static void
 time_cmp(void) {
 	if (stat1.st_mtime != stat2.st_mtime) {
-		printf("Different modification time for %s (", path1);
+		printf("Different modification time for ");
+		print_type(stat1.st_mode, 1);
+		printf("s %s (", path1);
 		print_time(stat1.st_mtime);
 		printf(") and %s (", path2);
 		print_time(stat2.st_mtime);
@@ -227,7 +229,9 @@ time_cmp(void) {
 static void
 perm_cmp(void) {
 	if (!S_ISLNK(stat1.st_mode) && (stat1.st_mode != stat2.st_mode)) {
-		printf("Different permissions for %s (%04o) and %s (%04o)\n",
+		printf("Different permissions for ");
+		print_type(stat1.st_mode, 1);
+		printf("s %s (%04o) and %s (%04o)\n",
 		    path1, stat1.st_mode & 07777, path2, stat2.st_mode &
 		    07777);
 		SET_EXIT_DIFF();
@@ -237,7 +241,9 @@ perm_cmp(void) {
 static void
 usr_cmp(void) {
 	if (stat1.st_uid != stat2.st_uid) {
-		printf("Different file owner for %s (", path1);
+		printf("Different file owner for ");
+		print_type(stat1.st_mode, 1);
+		printf("s %s (", path1);
 		print_uid(stat1.st_uid);
 		printf(") and %s (", path2);
 		print_uid(stat2.st_uid);
@@ -249,7 +255,9 @@ usr_cmp(void) {
 static void
 grp_cmp(void) {
 	if (stat1.st_gid != stat2.st_gid) {
-		printf("Different group ID for %s (", path1);
+		printf("Different group ID for ");
+		print_type(stat1.st_mode, 1);
+		printf("s %s (", path1);
 		print_gid(stat1.st_gid);
 		printf(") and %s (", path2);
 		print_gid(stat2.st_gid);
@@ -259,11 +267,11 @@ grp_cmp(void) {
 }
 
 static void
-print_type(mode_t m) {
+print_type(mode_t m, int n) {
 	if      (S_ISREG(m))
 		fputs("regular file", stdout);
 	else if (S_ISDIR(m))
-		fputs("directory", stdout);
+		printf("director%s", n ? "ie" : "y");
 	else if (S_ISLNK(m))
 		fputs("symbolic link", stdout);
 	else if (S_ISCHR(m))
