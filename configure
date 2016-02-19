@@ -9,11 +9,11 @@ cat <<EOT >.tmp.c
 main(){}
 EOT
 
-if clang -c .tmp.c 2>/dev/null; then
+if clang -c .tmp.c; then
 CC=clang
-elif gcc -c .tmp.c 2>/dev/null; then
+elif gcc -c .tmp.c; then
 CC=gcc
-fi
+fi >/dev/null 2>&1
 CFLAGS=""
 			cat <<EOT >.mk
 clean:
