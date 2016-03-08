@@ -12,7 +12,7 @@ Please note that [libavlbst](https://github.com/n-t-roff/libavlbst) needs to be 
 build.
 
 The tool can be downloaded as a
-[release tbz file](https://github.com/n-t-roff/rlcmp/releases/download/v1.0.0/rlcmp.tar.bz2),
+[release tbz file](https://github.com/n-t-roff/rlcmp/releases/download/v1.1.0/rlcmp-1.1.0.tar.bz2),
 or with the [Download ZIP](https://github.com/n-t-roff/rlcmp/archive/master.zip) button,
 or the command
 ```
