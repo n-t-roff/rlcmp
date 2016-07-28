@@ -4,13 +4,15 @@ INCDIR=		/usr/local/include
 LIBDIR=		/usr/local/lib
 BIN=		rlcmp
 OBJ=		main.o dir.o bst.o file.o
-
-_CFLAGS=	$(CFLAGS) $(_CFLAGS_) -Wall
-#_CFLAGS=	$(_CFLAGS_) -g -O0
-_LDFLAGS=	-s
+DBG=		-g -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls \
+		-fsanitize=undefined \
+		-fsanitize=integer \
+		-fsanitize=address
+_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DBG) -Wall -Wextra
+_LDFLAGS=	$(LDFLAGS) $(DBG) -s
 
 $(BIN):		$(OBJ)
-		$(CC) $(LDFLAGS) $(_LDFLAGS) -L${LIBDIR} \
+		$(CC) $(_LDFLAGS) -L${LIBDIR} \
 		    -Wl,-rpath,${LIBDIR} -o $@ $(OBJ) -lavlbst
 
 install:
@@ -23,10 +25,10 @@ uninstall:
 		rm -f $(BINDIR)/$(BIN) $(MANDIR)/man1/$(BIN).1
 
 clean:
-		rm -f $(BIN) $(OBJ) Makefile
+		rm -f $(BIN) $(OBJ)
 
 .c.o:
-		$(CC) $(_CFLAGS) $(CPPFLAGS) -I$(INCDIR) -c $<
+		$(CC) $(_CFLAGS) -I$(INCDIR) -c $<
 
 main.o:		Makefile $(INCDIR)/avlbst.h main.h dir.h
 bst.o:		Makefile $(INCDIR)/avlbst.h

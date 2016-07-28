@@ -122,7 +122,10 @@ dircmp(void) {
 		if (*s == '.' && (!s[1] || (s[1] == '.' && !s[2])))
 			continue;
 		if (bst_srch(&dirents, (union bst_val)(void *)s, &n))
-			printf("Not in %s/: %s\n", path1, s);
+			if (report_unexpect)
+				printf("Only in %s/: %s\n", path2, s);
+			else
+				printf("Not in %s/: %s\n", path1, s);
 		else
 			n->data = (union bst_val)(int)FILE_FOUND;
 	}
@@ -319,7 +322,10 @@ procfile(struct bst_node *n) {
 	size_t l;
 	char *s = (char *)n->key.p;
 	if (n->data.i == FILE_NOENT) {
-		printf("Not in %s: %s\n", path2, s);
+		if (report_unexpect)
+			printf("Only in %s: %s\n", path1, s);
+		else
+			printf("Not in %s: %s\n", path2, s);
 		n->data.i = DEL_NODE;
 		return;
 	}

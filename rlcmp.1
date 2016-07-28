@@ -5,7 +5,7 @@
 .Nd recursive file compare
 .Sh SYNOPSIS
 .Nm
-.Op Fl agmtu
+.Op Fl agmotu
 .Op Fl d Ar depth
 .Op Fl Fl
 .Ar file1
@@ -46,6 +46,14 @@ line argument.
 Compare file group.
 .It Fl m
 Compare file permissions (except for symbolic links).
+.It Fl o
+Report files which
+.Em are
+only in one directory tree (default of
+.Xr diff 1 )
+instead of reporting files which are
+.Em not
+found.
 .It Fl t
 Compare modification time (except for directories).
 .It Fl u

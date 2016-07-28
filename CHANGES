@@ -1,3 +1,8 @@
+2016-07-28
+
+    Option -o added:  Report unexpected files instead of missing
+    files.
+
 Release 1.1.0
 =============
 

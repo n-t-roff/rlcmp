@@ -42,7 +42,7 @@ char path1[PATH_SIZ];
 char path2[PATH_SIZ];
 size_t path1len;
 size_t path2len;
-size_t pagesiz;
+long pagesiz;
 int exit_code;
 char **args;
 int cmp_perm;
@@ -51,6 +51,7 @@ int cmp_usr;
 int cmp_grp;
 int cmp_depth;
 int depth;
+int report_unexpect;
 
 static size_t getpath(char *, char *);
 static void usage(char *);
@@ -91,6 +92,9 @@ main(int argc, char **argv) {
 				break;
 			case 'm':
 				cmp_perm = 1;
+				break;
+			case 'o':
+				report_unexpect = 1;
 				break;
 			case 't':
 				cmp_time = 1;
