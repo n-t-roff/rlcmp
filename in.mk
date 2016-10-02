@@ -1,15 +1,14 @@
-BINDIR=		/usr/local/bin
-MANDIR=		/usr/local/share/man
-INCDIR=		/usr/local/include
-LIBDIR=		/usr/local/lib
+PREFIX=		/usr/local
+BINDIR=		$(PREFIX)/bin
+MANDIR=		$(PREFIX)/share/man
+INCDIR=		$(PREFIX)/include
+LIBDIR=		$(PREFIX)/lib
 BIN=		rlcmp
 OBJ=		main.o dir.o bst.o file.o
-DBG=		#-g -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls \
-		-fsanitize=undefined \
-		-fsanitize=integer \
-		-fsanitize=address
-_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DBG) -Wall -Wextra
-_LDFLAGS=	$(LDFLAGS) $(DBG) -s
+_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__SAN) -Wall \
+		-Wextra
+_LDFLAGS=	$(LDFLAGS) $(__SAN) \
+		-s
 
 $(BIN):		$(OBJ)
 		$(CC) $(_LDFLAGS) -L${LIBDIR} \
@@ -26,6 +25,9 @@ uninstall:
 
 clean:
 		rm -f $(BIN) $(OBJ)
+
+distclean:	clean
+		rm -f Makefile config.log
 
 .c.o:
 		$(CC) $(_CFLAGS) -I$(INCDIR) -c $<

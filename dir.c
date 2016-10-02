@@ -27,6 +27,9 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#ifdef USE_SYS_MKDEV_H
+# include <sys/mkdev.h>
+#endif
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
@@ -183,8 +186,9 @@ typetest(struct bst_node *n) {
 	if (stat1.st_size != stat2.st_size) {
 		printf("Different sizes for ");
 		print_type(stat1.st_mode, 1);
-		printf("s %s (%ju) and %s (%ju)\n", path1, stat1.st_size,
-		    path2, stat2.st_size);
+		printf("s %s (%ju) and %s (%ju)\n", path1,
+		    (uintmax_t)stat1.st_size, path2,
+		    (uintmax_t)stat2.st_size);
 		SET_EXIT_DIFF();
 		return;
 	}
@@ -196,11 +200,13 @@ typetest(struct bst_node *n) {
 			return;
 	} else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
 		if (stat1.st_rdev != stat2.st_rdev) {
-			printf("Different %s devices %s (%u, %u) and "
-			    "%s (%u, %u)\n",
+			printf("Different %s devices %s (%lu, %lu) and "
+			    "%s (%lu, %lu)\n",
 			    S_ISCHR(stat1.st_mode) ? "character" : "block",
-			    path1, major(stat1.st_rdev), minor(stat1.st_rdev),
-			    path2, major(stat2.st_rdev), minor(stat2.st_rdev));
+			    path1, (unsigned long)major(stat1.st_rdev),
+			           (unsigned long)minor(stat1.st_rdev),
+			    path2, (unsigned long)major(stat2.st_rdev),
+			           (unsigned long)minor(stat2.st_rdev));
 			SET_EXIT_DIFF();
 			return;
 		}
@@ -235,8 +241,8 @@ perm_cmp(void) {
 		printf("Different permissions for ");
 		print_type(stat1.st_mode, 1);
 		printf("s %s (%04o) and %s (%04o)\n",
-		    path1, stat1.st_mode & 07777, path2, stat2.st_mode &
-		    07777);
+		    path1, (unsigned)stat1.st_mode & 07777,
+		    path2, (unsigned)stat2.st_mode & 07777);
 		SET_EXIT_DIFF();
 	}
 }

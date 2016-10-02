@@ -161,7 +161,7 @@ a:
 static void
 usage(char *s) {
 	fprintf(stderr,
-	    "%s: %s\nUsage: %s [-agmtu-] [-d<depth>] <file1> <file2>\n",
+	    "%s: %s\nUsage: %s [-agmotu-] [-d<depth>] <file1> <file2>\n",
 	    prog, s, prog);
 	exit(EXIT_ERROR);
 }
