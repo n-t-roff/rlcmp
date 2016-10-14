@@ -114,39 +114,6 @@ EOT
 	bmake -f $TMPMK >> $LOG 2>&1
 	test_result && MAKE=bmake
 }
-check_Sanitizer () {
-	check_for "CC Sanitizer"
-
-	__CDBG="-g -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls"
-	[ -n "$CC" ] || CC=cc
-	VER=`$CC --version`
-	if echo $VER | grep -iq gcc; then
-		printf "(gcc) "
-		__SAN="-fsanitize=address -fsanitize=undefined\
- -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow"
-	elif echo $VER | grep -q clang; then
-		printf "(clang) "
-		__SAN="-fsanitize=address -fsanitize=undefined\
- -fsanitize=unsigned-integer-overflow"
-	else
-		echo "Unknown compiler"
-		return
-	fi
-
-	cat <<EOT >$TMPC
-int
-main() {
-	return 0;
-}
-EOT
-	gen_mk
-	cat <<EOT >>$OUTMK
-$TMPNAM: ${TMPNAM}.o
-	\$(CC) \$(__CDBG) \$(__SAN) -o \$@ ${TMPNAM}.o
-EOT
-	compile
-	test_result || __SAN=
-}
 check_major_minor () {
 	check_for "major(3), minor(3)"
 
@@ -194,7 +161,7 @@ rm -f $LOG
 gen_mk
 
 check_make
-check_Sanitizer
+#check_Sanitizer
 check_major_minor
 
 gen_mk

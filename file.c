@@ -38,6 +38,7 @@
 #include <limits.h>
 #include "main.h"
 #include "dir.h"
+#include "file.h"
 
 /* Returns -1 on error, 1 for difference and 0 else. */
 

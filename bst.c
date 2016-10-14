@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <avlbst.h>
+#include "bst.h"
 
 /* recursive -> minimal stack use */
 

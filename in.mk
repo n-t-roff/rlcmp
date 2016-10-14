@@ -5,8 +5,7 @@ INCDIR=		$(PREFIX)/include
 LIBDIR=		$(PREFIX)/lib
 BIN=		rlcmp
 OBJ=		main.o dir.o bst.o file.o
-_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__SAN) -Wall \
-		-Wextra
+_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__SAN)
 _LDFLAGS=	$(LDFLAGS) $(__SAN) \
 		-s
 

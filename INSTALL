@@ -18,8 +18,9 @@
 
 3. Installation
 
-  The tool is build with the command
+  The tool is build with the commands:
 
+     $ ./configure
      $ make
 
   Installation usually has to be done as root:
@@ -28,12 +29,19 @@
 
   Generated files are removed with
 
-     $ make clean
+     $ make distclean
 
 
 4. Deinstallation
+
+  At first a makefile needs to be generated with
+
+     $ ./configure
 
   Deinstallation is done as root with
 
      # make uninstall
 
+  Then the generated makefile is removed with
+
+     $ make distclean

@@ -44,7 +44,7 @@ size_t path1len;
 size_t path2len;
 long pagesiz;
 int exit_code;
-char **args;
+static char **args;
 int cmp_perm;
 int cmp_time;
 int cmp_usr;

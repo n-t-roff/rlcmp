@@ -11,14 +11,11 @@ and the [installation instructions](https://github.com/n-t-roff/rlcmp/blob/maste
 Please note that [libavlbst](https://github.com/n-t-roff/libavlbst) needs to be installed before `rlcmp` can be
 build.
 
-The tool can be downloaded as a
-[release tbz file](https://github.com/n-t-roff/rlcmp/releases/download/v1.1.0/rlcmp-1.1.0.tar.bz2),
-or with the [Download ZIP](https://github.com/n-t-roff/rlcmp/archive/master.zip) button,
-or the command
+The tool can be downloaded with
 ```
 git clone https://github.com/n-t-roff/rlcmp.git
 ```
-In the latter case the archive can be updated with
+and updated with
 ```
 git pull
 ```
