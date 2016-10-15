@@ -102,10 +102,13 @@ main(int argc, char **argv) {
 			case 'u':
 				cmp_usr  = 1;
 				break;
+			case 'V':
+				printf("rlcmp version 1.1.0+ 2016-10-15 12:10\n");
+				exit(0);
 			default:
 				fprintf(stderr, "%s: Unknown option '%c'\n",
 				    prog, c);
-				return EXIT_ERROR;
+				usage(NULL);
 			}
 		}
 next:
@@ -160,8 +163,10 @@ a:
 
 static void
 usage(char *s) {
-	fprintf(stderr,
-	    "%s: %s\nUsage: %s [-agmotu-] [-d<depth>] <file1> <file2>\n",
-	    prog, s, prog);
+	if (s)
+		fprintf(stderr, "%s: %s\n", prog, s);
+
+	fprintf(stderr, "Usage: %s [-agmotuV-] [-d<depth>] <file1> <file2>\n",
+	    prog);
 	exit(EXIT_ERROR);
 }
