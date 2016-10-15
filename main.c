@@ -103,7 +103,7 @@ main(int argc, char **argv) {
 				cmp_usr  = 1;
 				break;
 			case 'V':
-				printf("rlcmp version 1.1.0+ 2016-10-15 12:10\n");
+				printf("rlcmp version 1.2.0\n");
 				exit(0);
 			default:
 				fprintf(stderr, "%s: Unknown option '%c'\n",
