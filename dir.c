@@ -67,9 +67,10 @@ static DIR *dir;
 static struct dirent *dirent;
 static struct stat stat2;
 
-#define FILE_NOENT 0
-#define FILE_FOUND 1
-#define DEL_NODE   2
+#define FILE_NOENT1 0 /* Not in path1 */
+#define FILE_NOENT2 1 /* Not in path2 */
+#define FILE_FOUND  2 /* Found in both trees */
+#define DEL_NODE    3
 
 void
 dircmp(void) {
@@ -96,7 +97,7 @@ dircmp(void) {
 		if (*s == '.' && (!s[1] || (s[1] == '.' && !s[2])))
 			continue;
 		avl_add(&dirents, (union bst_val)(void *)strdup(s),
-		    (union bst_val)(int)FILE_NOENT);
+		    (union bst_val)(int)FILE_NOENT2);
 	}
 	if (closedir(dir) == -1) {
 		fprintf(stderr, "%s: closedir \"%s\" failed: %s\n", prog,
@@ -111,6 +112,8 @@ dircmp(void) {
 	while (1) {
 		char *s;
 		struct bst_node *n;
+		int i;
+
 		errno = 0;
 		if (!(dirent = readdir(dir))) {
 			if (errno) {
@@ -124,11 +127,9 @@ dircmp(void) {
 		s = dirent->d_name;
 		if (*s == '.' && (!s[1] || (s[1] == '.' && !s[2])))
 			continue;
-		if (bst_srch(&dirents, (union bst_val)(void *)s, &n))
-			if (report_unexpect)
-				printf("Only in %s/: %s\n", path2, s);
-			else
-				printf("Not in %s/: %s\n", path1, s);
+		if ((i = bst_srch(&dirents, (union bst_val)(void *)s, &n)))
+			avl_add_at(&dirents, (union bst_val)(void *)strdup(s),
+			    (union bst_val)(int)FILE_NOENT1, i, n);
 		else
 			n->data = (union bst_val)(int)FILE_FOUND;
 	}
@@ -152,13 +153,23 @@ typetest(struct bst_node *n) {
 	if (lstat(path1, &stat1) == -1) {
 		fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
-		exit(EXIT_ERROR);
+		stat1.st_mode = 0;
 	}
+
 	if (lstat(path2, &stat2) == -1) {
 		fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
-		exit(EXIT_ERROR);
+		stat2.st_mode = 0;
 	}
+
+	if (!stat1.st_mode || !stat2.st_mode) {
+		if (n)
+			n->data.i = DEL_NODE;
+
+		SET_EXIT_DIFF();
+		return;
+	}
+
 	if ((stat1.st_mode & S_IFMT) != (stat2.st_mode & S_IFMT)) {
 		printf("Different file types for %s (", path1);
 		print_type(stat1.st_mode, 0);
@@ -181,8 +192,11 @@ typetest(struct bst_node *n) {
 			grp_cmp();
 		return;
 	}
+
+	/* Every file which is not a directory now gets removed from the DB. */
 	if (n)
 		n->data.i = DEL_NODE;
+
 	if (stat1.st_size != stat2.st_size) {
 		printf("Different sizes for ");
 		print_type(stat1.st_mode, 1);
@@ -327,7 +341,16 @@ static void
 procfile(struct bst_node *n) {
 	size_t l;
 	char *s = (char *)n->key.p;
-	if (n->data.i == FILE_NOENT) {
+
+	switch (n->data.i) {
+	case FILE_NOENT1:
+		if (report_unexpect)
+			printf("Only in %s: %s\n", path2, s);
+		else
+			printf("Not in %s: %s\n", path1, s);
+		n->data.i = DEL_NODE;
+		return;
+	case FILE_NOENT2:
 		if (report_unexpect)
 			printf("Only in %s: %s\n", path1, s);
 		else
@@ -335,6 +358,7 @@ procfile(struct bst_node *n) {
 		n->data.i = DEL_NODE;
 		return;
 	}
+
 	l = strlen(s);
 	if (path1len + l > PATH_SIZ) {
 		pathtoolong(path1, s);

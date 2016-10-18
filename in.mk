@@ -4,7 +4,7 @@ MANDIR=		$(PREFIX)/share/man
 INCDIR=		$(PREFIX)/include
 LIBDIR=		$(PREFIX)/lib
 BIN=		rlcmp
-OBJ=		main.o dir.o bst.o file.o
+OBJ=		main.o dir.o bst.o file.o ver.o
 _CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__SAN)
 _LDFLAGS=	$(LDFLAGS) $(__SAN) \
 		-s

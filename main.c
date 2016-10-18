@@ -34,6 +34,7 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "ver.h"
 #include "main.h"
 #include "dir.h"
 
@@ -103,7 +104,7 @@ main(int argc, char **argv) {
 				cmp_usr  = 1;
 				break;
 			case 'V':
-				printf("rlcmp version 1.2.0\n");
+				printf(version, prog);
 				exit(0);
 			default:
 				fprintf(stderr, "%s: Unknown option '%c'\n",
