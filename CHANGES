@@ -1,3 +1,11 @@
+2016-10-19
+
+    Severe bug found:  Differing files of equal size had not been
+    reported.
+
+    Dependency libavlbst is now optional, tsearch can be used in-
+    stead.
+
 2016-10-18
 
     Sort filenames for output.

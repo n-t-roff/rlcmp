@@ -1,7 +1,7 @@
 1. Dependencies
 
-  Before building rlcmp the shared library libavlbst needs to  be
-  installed.   Installation instructions are found on the project
+  It is suggested to install  the  speed  optimized  AVL  library
+  libavlbst.   Installation instructions are found on the project
   page https://github.com/n-t-roff/libavlbst.
 
 

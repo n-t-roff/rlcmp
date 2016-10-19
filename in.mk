@@ -6,12 +6,12 @@ LIBDIR=		$(PREFIX)/lib
 BIN=		rlcmp
 OBJ=		main.o dir.o bst.o file.o ver.o
 _CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__SAN)
-_LDFLAGS=	$(LDFLAGS) $(__SAN) \
+_LDFLAGS=	$(LDFLAGS) $(__SAN) -L${LIBDIR} -Wl,-rpath,${LIBDIR} \
 		-s
+LDADD=		$(LIB_AVLBST)
 
 $(BIN):		$(OBJ)
-		$(CC) $(_LDFLAGS) -L${LIBDIR} \
-		    -Wl,-rpath,${LIBDIR} -o $@ $(OBJ) -lavlbst
+		$(CC) $(_LDFLAGS) -o $@ $(OBJ) $(LDADD)
 
 install:
 		[ -d $(BINDIR) ] || mkdir -p $(BINDIR)

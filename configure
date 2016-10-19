@@ -146,6 +146,45 @@ EOT
 	compile
 	test_result && DEFS="$DEFS -DUSE_SYS_MKDEV_H"
 }
+check_libavlbst () {
+	check_for "libavlbst(3) version 2"
+
+	cat <<EOT >$TMPC
+#include <avlbst.h>
+int
+bst_cmp(union bst_val a, union bst_val b)
+{
+	(void)a;
+	(void)b;
+	return 0;
+}
+
+int
+main()
+{
+	struct bst bst = { NULL, bst_cmp };
+	struct bst_node *n;
+	int i;
+	i = bst_srch(&bst, (union bst_val)(void *)"test", &n);
+	avl_add_at(&bst, (union bst_val)(void *)"test", (union bst_val)(int)0,
+	    i, n);
+	return 0;
+}
+EOT
+	LIB_AVLBST="-lavlbst"
+	gen_mk
+	cat <<EOT >>$OUTMK
+$TMPNAM: ${TMPNAM}.o
+	\$(CC) \$(_CFLAGS) \$(_LDFLAGS) -o \$@ ${TMPNAM}.o \$(LDADD)
+EOT
+	compile
+	test_result && {
+		DEFS="$DEFS -DHAVE_LIBAVLBST"
+		return
+	}
+
+	LIB_AVLBST=""
+}
 	[ ! -s compat.h ] && rm compat.h
 OUTMK=Makefile
 INMK=in.mk
@@ -163,6 +202,7 @@ gen_mk
 check_make
 #check_Sanitizer
 check_major_minor
+check_libavlbst
 
 gen_mk
 rm -f $TMPNAM*

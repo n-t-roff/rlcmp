@@ -40,6 +40,7 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
+#include <search.h>
 #include "main.h"
 #include "dir.h"
 #include "bst.h"
@@ -47,11 +48,6 @@
 
 struct stat stat1;
 
-static void procfile(struct bst_node *);
-static void delfile(struct bst *, struct bst_node *);
-static void procdir(struct bst_node *);
-static void deldir(struct bst *, struct bst_node *);
-static int name_cmp(union bst_val, union bst_val);
 static void pathtoolong(char *, char *);
 static void print_time(time_t);
 static void print_type(mode_t, int);
@@ -62,7 +58,29 @@ static void perm_cmp(void);
 static void usr_cmp(void);
 static void grp_cmp(void);
 
+#ifdef HAVE_LIBAVLBST
+static void procfilenode(struct bst_node *);
+static void procdirnode(struct bst_node *);
+static void delfile(struct bst *, struct bst_node *);
+static void deldir(struct bst *, struct bst_node *);
+static int name_cmp(union bst_val, union bst_val);
+
 static struct bst dirents = { NULL, name_cmp };
+#else
+struct db_dirent {
+	char *name;
+	int stat;
+};
+
+static void procfilenode(const void *, const VISIT, const int);
+static void procdirnode(const void *, const VISIT, const int);
+static void procfile(char *, int *);
+static void procdir(char *);
+static int dirent_cmp(const void *, const void *);
+
+static void *dirents;
+#endif
+
 static DIR *dir;
 static struct dirent *dirent;
 static struct stat stat2;
@@ -74,8 +92,16 @@ static struct stat stat2;
 
 void
 dircmp(void) {
-	struct bst_node *bst = NULL;
-	dirents.root = bst;
+#ifdef HAVE_LIBAVLBST
+	struct bst_node *bst = dirents.root;
+	dirents.root = NULL;
+#else
+	struct db_dirent *dep, *dep2;
+	void *vp;
+	void *bst = dirents;
+	dirents = NULL;
+#endif
+
 	if (!(dir = opendir(path1))) {
 		fprintf(stderr, "%s: opendir \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
@@ -83,6 +109,7 @@ dircmp(void) {
 	}
 	while (1) {
 		char *s;
+
 		errno = 0;
 		if (!(dirent = readdir(dir))) {
 			if (errno) {
@@ -94,10 +121,19 @@ dircmp(void) {
 			break;
 		}
 		s = dirent->d_name;
+
 		if (*s == '.' && (!s[1] || (s[1] == '.' && !s[2])))
 			continue;
+
+#ifdef HAVE_LIBAVLBST
 		avl_add(&dirents, (union bst_val)(void *)strdup(s),
 		    (union bst_val)(int)FILE_NOENT2);
+#else
+		dep = malloc(sizeof(struct db_dirent));
+		dep->name = strdup(s);
+		dep->stat = FILE_NOENT2;
+		tsearch(dep, &dirents, dirent_cmp);
+#endif
 	}
 	if (closedir(dir) == -1) {
 		fprintf(stderr, "%s: closedir \"%s\" failed: %s\n", prog,
@@ -111,8 +147,10 @@ dircmp(void) {
 	}
 	while (1) {
 		char *s;
+#ifdef HAVE_LIBAVLBST
 		struct bst_node *n;
 		int i;
+#endif
 
 		errno = 0;
 		if (!(dirent = readdir(dir))) {
@@ -125,14 +163,33 @@ dircmp(void) {
 			break;
 		}
 		s = dirent->d_name;
+
 		if (*s == '.' && (!s[1] || (s[1] == '.' && !s[2])))
 			continue;
+
+#ifdef HAVE_LIBAVLBST
 		if ((i = bst_srch(&dirents, (union bst_val)(void *)s, &n)))
 			avl_add_at(&dirents, (union bst_val)(void *)strdup(s),
 			    (union bst_val)(int)FILE_NOENT1, i, n);
 		else
 			n->data = (union bst_val)(int)FILE_FOUND;
+#else
+		dep = malloc(sizeof(struct db_dirent));
+		dep->name = strdup(s);
+		dep->stat = FILE_NOENT1;
+		vp = tsearch(dep, &dirents, dirent_cmp);
+		dep2 = *(struct db_dirent **)vp;
+
+		if (dep2 != dep) {
+			/* Entry did exist already */
+
+			free(dep->name);
+			free(dep);
+			dep2->stat = FILE_FOUND;
+		}
+#endif
 	}
+
 	if (closedir(dir) == -1) {
 		fprintf(stderr, "%s: closedir \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
@@ -142,14 +199,30 @@ dircmp(void) {
 	path1[path1len  ] =  0 ;
 	path2[path2len++] = '/';
 	path2[path2len  ] =  0 ;
-	proctree(&dirents, procfile, delfile);
-	proctree(&dirents, procdir , deldir );
+#ifdef HAVE_LIBAVLBST
+	proctree(&dirents, procfilenode, delfile);
+	proctree(&dirents, procdirnode , deldir );
+	dirents.root = bst;
+#else
+	twalk(dirents, procfilenode);
+	twalk(dirents, procdirnode );
+
+	while (dirents) {
+		dep = *(struct db_dirent **)dirents;
+		tdelete(dep, &dirents, dirent_cmp);
+		free(dep->name);
+		free(dep);
+	}
+
+	dirents = bst;
+#endif
 	path1[--path1len] = 0;
 	path2[--path2len] = 0;
 }
 
 void
-typetest(struct bst_node *n) {
+typetest(int *st)
+{
 	if (lstat(path1, &stat1) == -1) {
 		fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
@@ -163,8 +236,8 @@ typetest(struct bst_node *n) {
 	}
 
 	if (!stat1.st_mode || !stat2.st_mode) {
-		if (n)
-			n->data.i = DEL_NODE;
+		if (st)
+			*st = DEL_NODE;
 
 		SET_EXIT_DIFF();
 		return;
@@ -176,13 +249,16 @@ typetest(struct bst_node *n) {
 		printf(") and %s (", path2);
 		print_type(stat2.st_mode, 0);
 		printf(")\n");
+
+		if (st)
+			*st = DEL_NODE;
+
 		SET_EXIT_DIFF();
-		if (n)
-			n->data.i = DEL_NODE;
 		return;
 	}
+
 	if (S_ISDIR(stat1.st_mode)) {
-		if (!n) /* Called from main() */
+		if (!st) /* Called from main() */
 			dircmp();
 		if (cmp_perm)
 			perm_cmp();
@@ -193,9 +269,8 @@ typetest(struct bst_node *n) {
 		return;
 	}
 
-	/* Every file which is not a directory now gets removed from the DB. */
-	if (n)
-		n->data.i = DEL_NODE;
+	if (st)
+		*st = DEL_NODE;
 
 	if (stat1.st_size != stat2.st_size) {
 		printf("Different sizes for ");
@@ -206,12 +281,15 @@ typetest(struct bst_node *n) {
 		SET_EXIT_DIFF();
 		return;
 	}
+
 	if (S_ISREG(stat1.st_mode)) {
 		if (stat1.st_size && filediff())
 			return;
+
 	} else if (S_ISLNK(stat1.st_mode)) {
 		if (stat1.st_size && linkdiff())
 			return;
+
 	} else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
 		if (stat1.st_rdev != stat2.st_rdev) {
 			printf("Different %s devices %s (%lu, %lu) and "
@@ -225,6 +303,7 @@ typetest(struct bst_node *n) {
 			return;
 		}
 	}
+
 	if (cmp_time)
 		time_cmp();
 	if (cmp_perm)
@@ -337,74 +416,138 @@ print_gid(gid_t g) {
 		printf("%d", g);
 }
 
+#ifdef HAVE_LIBAVLBST
 static void
-procfile(struct bst_node *n) {
-	size_t l;
-	char *s = (char *)n->key.p;
+procfilenode(struct bst_node *n)
+{
+	char *s = n->key.p;
+	int *st = &n->data.i;
+#else
+static void
+procfilenode(const void *n, const VISIT which, const int d)
+{
+	struct db_dirent *e;
 
-	switch (n->data.i) {
+	(void)d;
+
+	switch (which) {
+	case postorder:
+	case leaf:
+		e = *(struct db_dirent * const *)n;
+		procfile(e->name, &e->stat);
+		break;
+	default:
+		;
+	}
+}
+
+static void
+procfile(char *s, int *st)
+{
+#endif
+	size_t l;
+
+	switch (*st) {
 	case FILE_NOENT1:
 		if (report_unexpect)
 			printf("Only in %s: %s\n", path2, s);
 		else
 			printf("Not in %s: %s\n", path1, s);
-		n->data.i = DEL_NODE;
+
 		return;
 	case FILE_NOENT2:
 		if (report_unexpect)
 			printf("Only in %s: %s\n", path1, s);
 		else
 			printf("Not in %s: %s\n", path2, s);
-		n->data.i = DEL_NODE;
+
 		return;
 	}
 
 	l = strlen(s);
+
 	if (path1len + l > PATH_SIZ) {
 		pathtoolong(path1, s);
 		return;
 	}
+
 	if (path2len + l > PATH_SIZ) {
 		pathtoolong(path2, s);
 		return;
 	}
+
 	memcpy(path1 + path1len, s, l);
 	path1[path1len + l] = 0;
 	memcpy(path2 + path2len, s, l);
 	path2[path2len + l] = 0;
-	typetest(n);
+	typetest(st);
 	path1[path1len] = 0;
 	path2[path2len] = 0;
+	return;
 }
 
+#ifdef HAVE_LIBAVLBST
 static void
 delfile(struct bst *t, struct bst_node *n) {
-	if (n->data.i == DEL_NODE) {
+	if (n->data.i != FILE_FOUND) {
 		free(n->key.p);
 		bst_del_node(t, n);
 	}
 }
+#endif
+
+#ifdef HAVE_LIBAVLBST
+static void
+procdirnode(struct bst_node *n)
+{
+	char *s = n->key.p;
+#else
+static void
+procdirnode(const void *n, const VISIT which, const int d)
+{
+	struct db_dirent *e;
+
+	(void)d;
+
+	switch (which) {
+	case postorder:
+	case leaf:
+		e = *(struct db_dirent * const *)n;
+
+		if (e->stat == FILE_FOUND)
+			procdir(e->name);
+
+		break;
+	default:
+		;
+	}
+}
 
 static void
-procdir(struct bst_node *n) {
+procdir(char *s)
+{
+#endif
 	size_t l;
-	char *s;
+
 	if (cmp_depth) {
 		if (depth)
 			depth--;
 		else
 			return;
 	}
-	s = (char *)n->key.p;
+
 	l = strlen(s);
+
 	if (path1len + l > PATH_SIZ) {
 		pathtoolong(path1, s);
 		return;
 	}
+
 	if (path2len + l > PATH_SIZ) {
 		pathtoolong(path2, s);
 		return;
 	}
+
 	memcpy(path1 + path1len, s, l);
 	memcpy(path2 + path2len, s, l);
 	path1len += l;
@@ -419,6 +562,7 @@ procdir(struct bst_node *n) {
 	depth++;
 }
 
+#ifdef HAVE_LIBAVLBST
 static void
 deldir(struct bst *t, struct bst_node *n) {
 	free(n->key.p);
@@ -429,6 +573,15 @@ static int
 name_cmp(union bst_val a, union bst_val b) {
 	return strcmp(a.p, b.p);
 }
+#else
+static int
+dirent_cmp(const void *a, const void *b)
+{
+	return strcmp(
+	    ((const struct db_dirent *)a)->name,
+	    ((const struct db_dirent *)b)->name);
+}
+#endif
 
 static void
 pathtoolong(char *p, char *f) {

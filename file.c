@@ -54,7 +54,7 @@ filediff(void) {
 		    path1, strerror(errno));
 		return -1;
 	}
-	if ((fd2 = open(path1, O_RDONLY)) == -1) {
+	if ((fd2 = open(path2, O_RDONLY)) == -1) {
 		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
 		goto cls1;

@@ -1,4 +1,4 @@
 void dircmp(void);
-void typetest(struct bst_node *);
+void typetest(int *);
 
 extern struct stat stat1;
