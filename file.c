@@ -34,21 +34,31 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 /* because dir.h included below uses avlbst types */
-#include <avlbst.h>
+#ifdef HAVE_LIBAVLBST
+# include <avlbst.h>
+#endif
 #include <limits.h>
 #include "main.h"
 #include "dir.h"
 #include "file.h"
+
+static char buff1[BUFF_SIZ];
+static char buff2[BUFF_SIZ];
 
 /* Returns -1 on error, 1 for difference and 0 else. */
 
 int
 filediff(void) {
 	int fd1, fd2;
+	int diff = 0;
+#ifdef MMAP_MEMCMP
 	off_t offs, left;
 	size_t len;
 	char *buf1, *buf2;
-	int diff = 0;
+#else
+	ssize_t l1, l2;
+#endif
+
 	if ((fd1 = open(path1, O_RDONLY)) == -1) {
 		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
@@ -59,6 +69,7 @@ filediff(void) {
 		    path2, strerror(errno));
 		goto cls1;
 	}
+#ifdef MMAP_MEMCMP
 	offs = 0;
 	left = stat1.st_size;
 	while (left) {
@@ -102,6 +113,45 @@ filediff(void) {
 		offs += len;
 		left -= len;
 	}
+#else
+	while (1) {
+		l1 = read(fd1, buff1, BUFF_SIZ);
+
+		if (l1 == -1) {
+			fprintf(stderr, "%s: read \"%s\" failed: %s\n",
+			    prog, path1, strerror(errno));
+			SET_EXIT_DIFF();
+			break;
+		}
+
+		l2 = read(fd2, buff2, BUFF_SIZ);
+
+		if (l2 == -1) {
+			fprintf(stderr, "%s: read \"%s\" failed: %s\n",
+			    prog, path2, strerror(errno));
+			SET_EXIT_DIFF();
+			break;
+		}
+
+		if (l1 != l2) {
+			printf("Different sizes for %s and %s\n", path1,
+			    path2);
+			SET_EXIT_DIFF();
+			diff = 1;
+			break;
+		}
+
+		if (memcmp(buff1, buff2, l1)) {
+			printf("Different files %s and %s\n", path1, path2);
+			SET_EXIT_DIFF();
+			diff = 1;
+			break;
+		}
+
+		if (l1 < BUFF_SIZ)
+			break;
+	}
+#endif
 	if (close(fd2) == -1) {
 		fprintf(stderr, "%s: close \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
@@ -120,28 +170,29 @@ cls1:
 
 int
 linkdiff(void) {
-	static char buf1[PATH_SIZ];
-	static char buf2[PATH_SIZ];
 	ssize_t l1, l2;
-	if ((l1 = readlink(path1, buf1, sizeof buf1)) == -1) {
+	if ((l1 = readlink(path1, buff1, sizeof buff1)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
 		return -1;
 	}
-	if ((l2 = readlink(path2, buf2, sizeof buf2)) == -1) {
+	if ((l2 = readlink(path2, buff2, sizeof buff2)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
 		return -1;
 	}
 	if (l1 != l2) {
+		/* Only possible if link had changed right now, since
+		 * st_size had already been tested. */
+
 		printf("Different link length for %s (%zu) and %s (%zu)\n",
 		    path1, l1, path2, l2);
 		SET_EXIT_DIFF();
 		return 1;
 	}
-	if (memcmp(buf1, buf2, l1)) {
+	if (memcmp(buff1, buff2, l1)) {
 		printf("Different symlinks %s -> %s and %s -> %s\n",
-		    path1, buf1, path2, buf2);
+		    path1, buff1, path2, buff2);
 		SET_EXIT_DIFF();
 		return 1;
 	}

@@ -15,6 +15,13 @@
      INCDIR   Directory of the AVL library include files
      LIBDIR   Directory of the AVL library
 
+  Further it is possible to configure using  mmap(2)  instead  of
+  read(2) by removing the comment in the line
+
+     MMAP= #-DMMAP_MEMCMP
+
+  but normally read(2) is faster.
+
 
 3. Installation
 

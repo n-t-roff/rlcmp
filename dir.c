@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/types.h>
 #ifdef USE_SYS_MKDEV_H
 # include <sys/mkdev.h>
@@ -35,7 +36,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <avlbst.h>
+#ifdef HAVE_LIBAVLBST
+# include <avlbst.h>
+# include "bst.h"
+#endif
 #include <limits.h>
 #include <time.h>
 #include <pwd.h>
@@ -43,7 +47,6 @@
 #include <search.h>
 #include "main.h"
 #include "dir.h"
-#include "bst.h"
 #include "file.h"
 
 struct stat stat1;
@@ -236,6 +239,8 @@ typetest(int *st)
 	}
 
 	if (!stat1.st_mode || !stat2.st_mode) {
+		/* Only possible on error */
+
 		if (st)
 			*st = DEL_NODE;
 

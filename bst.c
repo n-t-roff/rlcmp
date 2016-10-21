@@ -25,6 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef HAVE_LIBAVLBST
 #include <stdio.h>
 #include <stdlib.h>
 #include <avlbst.h>
@@ -60,3 +61,4 @@ go_up:
 		goto proc_data;
 	goto go_up;
 }
+#endif

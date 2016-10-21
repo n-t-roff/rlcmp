@@ -1,3 +1,8 @@
+2016-10-21
+
+    mmap(2) replaced by read(2).  Benchmarks show that read(2) is
+    faster than mmap(2) on most systems.
+
 2016-10-19
 
     Severe bug found:  Differing files of equal size had not been

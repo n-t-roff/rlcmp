@@ -1,4 +1,5 @@
-#define PATH_SIZ (PATH_MAX > 8192 ? PATH_MAX : 8192) /* for realpath() */
+#define PATH_SIZ (PATH_MAX > 1024*16 ? PATH_MAX : 1024*16) /* for realpath() */
+#define BUFF_SIZ PATH_SIZ
 #define SET_EXIT_DIFF() exit_code = 1
 #define EXIT_ERROR 2
 extern char *prog;

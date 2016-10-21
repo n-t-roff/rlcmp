@@ -3,10 +3,15 @@ BINDIR=		$(PREFIX)/bin
 MANDIR=		$(PREFIX)/share/man
 INCDIR=		$(PREFIX)/include
 LIBDIR=		$(PREFIX)/lib
+# Remove comment to enable mmap(2) + memcmp(3).  Else read(2) + memcmp(3) is
+# used.  While it had been stated that mmap is faster than read, benchmarks
+# on modern systems show that read(2) ist faster.
+MMAP=		#-DMMAP_MEMCMP
 BIN=		rlcmp
 OBJ=		main.o dir.o bst.o file.o ver.o
-_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__SAN)
-_LDFLAGS=	$(LDFLAGS) $(__SAN) -L${LIBDIR} -Wl,-rpath,${LIBDIR} \
+_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__SAN) \
+		$(MMAP)
+_LDFLAGS=	$(LDFLAGS) $(__CDBG) $(__SAN) -L${LIBDIR} -Wl,-rpath,${LIBDIR} \
 		-s
 LDADD=		$(LIB_AVLBST)
 
@@ -23,7 +28,7 @@ uninstall:
 		rm -f $(BINDIR)/$(BIN) $(MANDIR)/man1/$(BIN).1
 
 clean:
-		rm -f $(BIN) $(OBJ)
+		rm -f $(BIN) $(OBJ) *.gc??
 
 distclean:	clean
 		rm -f Makefile config.log

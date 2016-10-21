@@ -30,7 +30,9 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <avlbst.h>
+#ifdef HAVE_LIBAVLBST
+# include <avlbst.h>
+#endif
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
