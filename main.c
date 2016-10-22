@@ -56,7 +56,6 @@ int cmp_depth;
 int depth;
 int report_unexpect;
 
-static size_t getpath(char *, char *);
 static void usage(char *);
 
 int
@@ -133,14 +132,33 @@ next:
 	}
 	if (argc != 2)
 		usage("Wrong number of arguments");
+
 	args = argv;
-	path1len = getpath(*argv++, path1);
-	path2len = getpath(*argv++, path2);
+
+	if (!realpath(*argv, path1)) {
+		fprintf(stderr, "%s: realpath \"%s\" failed: %s\n",
+		    prog, *argv, strerror(errno));
+		exit(EXIT_ERROR);
+	}
+
+	path1len = strlen(path1);
+	argv++;
+
+	if (!realpath(*argv, path2)) {
+		fprintf(stderr, "%s: realpath \"%s\" failed: %s\n",
+		    prog, *argv, strerror(errno));
+		exit(EXIT_ERROR);
+	}
+
+	path2len = strlen(path2);
+
 	if (path1len == path2len && !memcmp(path1, path2, path1len)) {
 		printf("\"%s\" and \"%s\" is the same file\n", *args,
 		    args[1]);
 		return 0;
 	}
+
+#ifdef MMAP_MEMCMP
 	errno = 0;
 	if ((pagesiz = sysconf(_SC_PAGESIZE)) == -1) {
 		fprintf(stderr, "%s: sysconf(_SC_PAGESIZE) failed: ", prog);
@@ -150,31 +168,10 @@ next:
 			fputs("Not supported\n", stderr);
 		return EXIT_ERROR;
 	}
+#endif
+
 	typetest(NULL);
 	return exit_code;
-}
-
-static size_t
-getpath(char *arg, char *buf) {
-	size_t l;
-	if (!realpath(arg, buf)) {
-		if (errno == ENOENT && !lstat(arg, &stat1) &&
-		    S_ISLNK(stat1.st_mode)) {
-			if ((l = strlen(arg)))
-				memcpy(buf, arg, l);
-			buf[l] = 0;
-			goto a;
-		}
-		fprintf(stderr, "%s: realpath \"%s\" failed: %s\n",
-		    prog, arg, strerror(errno));
-		exit(EXIT_ERROR);
-	}
-	l = strlen(buf);
-a:
-	if (l > 1 && buf[l - 1] == '/')
-		l--;
-	buf[l] = 0;
-	return l;
 }
 
 static void
