@@ -133,15 +133,8 @@ filediff(void) {
 			break;
 		}
 
-		if (l1 != l2) {
-			printf("Different sizes for %s and %s\n", path1,
-			    path2);
-			SET_EXIT_DIFF();
-			diff = 1;
-			break;
-		}
-
-		if (memcmp(buff1, buff2, l1)) {
+		if (l1 != l2 ||
+		    memcmp(buff1, buff2, l1)) {
 			printf("Different files %s and %s\n", path1, path2);
 			SET_EXIT_DIFF();
 			diff = 1;
@@ -171,30 +164,29 @@ cls1:
 int
 linkdiff(void) {
 	ssize_t l1, l2;
-	if ((l1 = readlink(path1, buff1, sizeof buff1)) == -1) {
+
+	if ((l1 = readlink(path1, buff1, sizeof(buff1) - 1)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
 		return -1;
 	}
-	if ((l2 = readlink(path2, buff2, sizeof buff2)) == -1) {
+
+	if ((l2 = readlink(path2, buff2, sizeof(buff2) - 1)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
 		return -1;
 	}
-	if (l1 != l2) {
-		/* Only possible if link had changed right now, since
-		 * st_size had already been tested. */
 
-		printf("Different link length for %s (%zu) and %s (%zu)\n",
-		    path1, l1, path2, l2);
-		SET_EXIT_DIFF();
-		return 1;
-	}
-	if (memcmp(buff1, buff2, l1)) {
-		printf("Different symlinks %s -> %s and %s -> %s\n",
+	buff1[l1] = 0;
+	buff2[l2] = 0;
+
+	if (l1 != l2 ||
+	    memcmp(buff1, buff2, l1)) {
+		printf("Different links %s -> %s and %s -> %s\n",
 		    path1, buff1, path2, buff2);
 		SET_EXIT_DIFF();
 		return 1;
 	}
+
 	return 0;
 }

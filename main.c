@@ -106,7 +106,20 @@ main(int argc, char **argv) {
 				cmp_usr  = 1;
 				break;
 			case 'V':
-				printf(version, prog);
+				printf("%s %s\n\tCompile option(s): "
+				    "use "
+#ifdef MMAP_MEMCMP
+				    "mmap"
+#else
+				    "read"
+#endif
+				    "(2) for compare, "
+#ifdef HAVE_LIBAVLBST
+				    "libavlbst"
+#else
+				    "tsearch"
+#endif
+				    "\n", prog, version);
 				exit(0);
 			default:
 				fprintf(stderr, "%s: Unknown option '%c'\n",
