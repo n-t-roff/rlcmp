@@ -86,7 +86,7 @@ static void *dirents;
 
 static DIR *dir;
 static struct dirent *dirent;
-static struct stat stat2;
+struct stat stat2;
 
 #define FILE_NOENT1 0 /* Not in path1 */
 #define FILE_NOENT2 1 /* Not in path2 */
@@ -247,6 +247,10 @@ typetest(int *st)
 		SET_EXIT_DIFF();
 		return;
 	}
+
+	if (stat1.st_ino == stat2.st_ino &&
+	    stat1.st_dev == stat2.st_dev)
+		return;
 
 	if ((stat1.st_mode & S_IFMT) != (stat2.st_mode & S_IFMT)) {
 		printf("Different file types for %s (", path1);

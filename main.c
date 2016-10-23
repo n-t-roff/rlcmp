@@ -152,11 +152,21 @@ next:
 
 	path2len = strlen(path2);
 
-	if (path1len == path2len && !memcmp(path1, path2, path1len)) {
-		printf("\"%s\" and \"%s\" is the same file\n", *args,
-		    args[1]);
-		return 0;
+	if (stat(path1, &stat1) == -1) {
+		fprintf(stderr, "%s: stat \"%s\" failed: %s\n", prog, path1,
+		    strerror(errno));
+		exit(EXIT_ERROR);
 	}
+
+	if (stat(path2, &stat2) == -1) {
+		fprintf(stderr, "%s: stat \"%s\" failed: %s\n", prog, path2,
+		    strerror(errno));
+		exit(EXIT_ERROR);
+	}
+
+	if (stat1.st_ino == stat2.st_ino &&
+	    stat1.st_dev == stat2.st_dev)
+		return 0;
 
 #ifdef MMAP_MEMCMP
 	errno = 0;
