@@ -1,11 +1,11 @@
-.Dd February 12, 2016
+.Dd October 23, 2016
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
 .Nd recursive file compare
 .Sh SYNOPSIS
 .Nm
-.Op Fl agmotuV
+.Op Fl AaDgmotuV
 .Op Fl d Ar depth
 .Op Fl Fl
 .Ar file1
@@ -30,9 +30,16 @@ It acts on files like a very simple version of
 .It Fl Fl
 Treat following arguments as filenames even if they begin with
 .Sq Fl .
+.It Fl A
+Same as option
+.Fl Da .
 .It Fl a
 Same as option
 .Fl gmtu .
+.It Fl D
+When comparing file permissions with
+.Fl m
+ignore permissions of directories.
 .It Fl d Ar depth
 Limit recursion
 .Ar depth .

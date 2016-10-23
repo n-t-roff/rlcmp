@@ -339,7 +339,9 @@ time_cmp(void) {
 
 static void
 perm_cmp(void) {
-	if (!S_ISLNK(stat1.st_mode) && (stat1.st_mode != stat2.st_mode)) {
+	if (!S_ISLNK(stat1.st_mode) &&
+	    (!ign_dir_perm || !S_ISDIR(stat1.st_mode)) &&
+	    (stat1.st_mode != stat2.st_mode)) {
 		printf("Different permissions for ");
 		print_type(stat1.st_mode, 1);
 		printf("s %s (%04o) and %s (%04o)\n",

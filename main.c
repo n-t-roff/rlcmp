@@ -55,6 +55,7 @@ int cmp_grp;
 int cmp_depth;
 int depth;
 int report_unexpect;
+int ign_dir_perm;
 
 static void usage(char *);
 
@@ -72,6 +73,9 @@ main(int argc, char **argv) {
 			case '-':
 				noopts = 1;
 				goto next;
+			case 'A':
+				ign_dir_perm = 1;
+				/* fall through */
 			case 'a':
 				cmp_perm = 1;
 				cmp_time = 1;
@@ -97,6 +101,9 @@ main(int argc, char **argv) {
 				break;
 			case 'o':
 				report_unexpect = 1;
+				break;
+			case 'D':
+				ign_dir_perm = 1;
 				break;
 			case 't':
 				cmp_time = 1;
@@ -189,7 +196,7 @@ usage(char *s) {
 	if (s)
 		fprintf(stderr, "%s: %s\n", prog, s);
 
-	fprintf(stderr, "Usage: %s [-agmotuV-] [-d<depth>] <file1> <file2>\n",
+	fprintf(stderr, "Usage: %s [-AaDgmotuV-] [-d<depth>] <file1> <file2>\n",
 	    prog);
 	exit(EXIT_ERROR);
 }

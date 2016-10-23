@@ -16,3 +16,4 @@ extern int cmp_grp;
 extern int cmp_depth;
 extern int depth;
 extern int report_unexpect;
+extern int ign_dir_perm;
