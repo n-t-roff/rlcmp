@@ -5,7 +5,7 @@
 .Nd recursive file compare
 .Sh SYNOPSIS
 .Nm
-.Op Fl AaDgmotuV
+.Op Fl AaDgLmotuV
 .Op Fl d Ar depth
 .Op Fl Fl
 .Ar file1
@@ -32,7 +32,7 @@ Treat following arguments as filenames even if they begin with
 .Sq Fl .
 .It Fl A
 Same as option
-.Fl Da .
+.Fl aDL .
 .It Fl a
 Same as option
 .Fl gmtu .
@@ -51,6 +51,10 @@ means that directories are only entered when they are given as a command
 line argument.
 .It Fl g
 Compare file group.
+.It Fl L
+When comparing the modification time with
+.Fl t
+ignore modification time of symbolic links.
 .It Fl m
 Compare file permissions (except for symbolic links).
 .It Fl o

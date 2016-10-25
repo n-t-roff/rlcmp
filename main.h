@@ -17,3 +17,4 @@ extern int cmp_depth;
 extern int depth;
 extern int report_unexpect;
 extern int ign_dir_perm;
+extern int ign_link_time;

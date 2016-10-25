@@ -325,7 +325,8 @@ typetest(int *st)
 
 static void
 time_cmp(void) {
-	if (stat1.st_mtime != stat2.st_mtime) {
+	if ((!ign_link_time || !S_ISLNK(stat1.st_mode)) &&
+	    stat1.st_mtime != stat2.st_mtime) {
 		printf("Different modification time for ");
 		print_type(stat1.st_mode, 1);
 		printf("s %s (", path1);

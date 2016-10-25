@@ -56,6 +56,7 @@ int cmp_depth;
 int depth;
 int report_unexpect;
 int ign_dir_perm;
+int ign_link_time;
 
 static void usage(char *);
 
@@ -75,6 +76,7 @@ main(int argc, char **argv) {
 				goto next;
 			case 'A':
 				ign_dir_perm = 1;
+				ign_link_time = 1;
 				/* fall through */
 			case 'a':
 				cmp_perm = 1;
@@ -95,6 +97,9 @@ main(int argc, char **argv) {
 				goto next;
 			case 'g':
 				cmp_grp  = 1;
+				break;
+			case 'L':
+				ign_link_time = 1;
 				break;
 			case 'm':
 				cmp_perm = 1;
