@@ -1,11 +1,11 @@
-.Dd October 23, 2016
+.Dd September 23, 2017
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
 .Nd recursive file compare
 .Sh SYNOPSIS
 .Nm
-.Op Fl AaDgLmotuV
+.Op Fl AaCDgLmotuV
 .Op Fl d Ar depth
 .Op Fl Fl
 .Ar file1
@@ -36,6 +36,8 @@ Same as option
 .It Fl a
 Same as option
 .Fl gmtu .
+.It Fl C
+Don't compare file contents.
 .It Fl D
 When comparing file permissions with
 .Fl m

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Carsten Kunze
+ * Copyright (c) 2016-2017, Carsten Kunze
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,8 +57,9 @@ int depth;
 int report_unexpect;
 int ign_dir_perm;
 int ign_link_time;
+short ign_cont;
 
-static void usage(char *);
+static void usage(const char *);
 
 int
 main(int argc, char **argv) {
@@ -84,6 +85,9 @@ main(int argc, char **argv) {
 				cmp_usr  = 1;
 				cmp_grp  = 1;
 				break;
+			case 'C':
+				ign_cont = 1;
+				break;
 			case 'd':
 				cmp_depth = 1;
 				arg = ++s;
@@ -92,7 +96,8 @@ main(int argc, char **argv) {
 					c = *arg;
 				}
 				if (c < '0' || c > '9')
-					usage("Option -d needs a number as argument");
+					usage("Option -d needs a "
+					    "number as argument");
 				depth = atoi(arg);
 				goto next;
 			case 'g':
@@ -197,7 +202,7 @@ next:
 }
 
 static void
-usage(char *s) {
+usage(const char *s) {
 	if (s)
 		fprintf(stderr, "%s: %s\n", prog, s);
 

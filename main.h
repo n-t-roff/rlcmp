@@ -18,3 +18,4 @@ extern int depth;
 extern int report_unexpect;
 extern int ign_dir_perm;
 extern int ign_link_time;
+extern short ign_cont;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Carsten Kunze
+ * Copyright (c) 2016-2017, Carsten Kunze
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,9 @@ filediff(void) {
 	ssize_t l1, l2;
 #endif
 
+	if (ign_cont) {
+		return 0;
+	}
 	if ((fd1 = open(path1, O_RDONLY)) == -1) {
 		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
