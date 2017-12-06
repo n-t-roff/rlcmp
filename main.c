@@ -206,7 +206,8 @@ usage(const char *s) {
 	if (s)
 		fprintf(stderr, "%s: %s\n", prog, s);
 
-	fprintf(stderr, "Usage: %s [-AaDgmotuV-] [-d<depth>] <file1> <file2>\n",
+	fprintf(stderr,
+"Usage: %s [-AaCDgLmotuV] [-d<depth>] [--] <file1> <file2>\n",
 	    prog);
 	exit(EXIT_ERROR);
 }

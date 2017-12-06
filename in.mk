@@ -11,7 +11,7 @@ STRP=		-s
 # on modern systems show that read(2) ist faster.
 MMAP=		#-DMMAP_MEMCMP
 
-OBJ=		main.o dir.o bst.o file.o ver.o
+OBJ=		main.o dir.o bst.o file.o
 _CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) \
 		$(__CDBG) $(__CLDBG) \
 		$(MMAP)
