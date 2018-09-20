@@ -59,7 +59,7 @@ int ign_dir_perm;
 int ign_link_time;
 short ign_cont;
 
-static void usage(const char *);
+static void usage(const char *) __attribute__ ((noreturn));
 
 int
 main(int argc, char **argv) {
@@ -122,7 +122,8 @@ main(int argc, char **argv) {
 				cmp_usr  = 1;
 				break;
 			case 'V':
-				printf("%s %s\n\tCompile option(s): "
+				printf("%s "VERSION"\n"
+				       "\tCompile option(s): "
 				    "use "
 #ifdef MMAP_MEMCMP
 				    "mmap"
@@ -135,7 +136,7 @@ main(int argc, char **argv) {
 #else
 				    "tsearch"
 #endif
-				    "\n", prog, version);
+				    "\n", prog);
 				exit(0);
 			default:
 				fprintf(stderr, "%s: Unknown option '%c'\n",
@@ -201,8 +202,7 @@ next:
 	return exit_code;
 }
 
-static void
-usage(const char *s) {
+static void usage(const char *s) {
 	if (s)
 		fprintf(stderr, "%s: %s\n", prog, s);
 

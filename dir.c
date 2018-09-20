@@ -132,8 +132,10 @@ dircmp(void) {
 			continue;
 
 #ifdef HAVE_LIBAVLBST
-		avl_add(&dirents, (union bst_val)(void *)strdup(s),
-		    (union bst_val)(int)FILE_NOENT2);
+        union bst_val k, v;
+        k.p = strdup(s);
+        v.i = FILE_NOENT2;
+        avl_add(&dirents, k, v);
 #else
 		dep = malloc(sizeof(struct db_dirent));
 		dep->name = strdup(s);
@@ -174,11 +176,16 @@ dircmp(void) {
 			continue;
 
 #ifdef HAVE_LIBAVLBST
-		if ((i = bst_srch(&dirents, (union bst_val)(void *)s, &n)))
-			avl_add_at(&dirents, (union bst_val)(void *)strdup(s),
-			    (union bst_val)(int)FILE_NOENT1, i, n);
-		else
-			n->data = (union bst_val)(int)FILE_FOUND;
+        union bst_val k, v;
+        k.p = s;
+        if ((i = bst_srch(&dirents, k, &n))) {
+            k.p = strdup(s);
+            v.i = FILE_NOENT1;
+            avl_add_at(&dirents, k, v, i, n);
+        } else {
+            v.i = FILE_FOUND;
+            n->data = v;
+        }
 #else
 		dep = malloc(sizeof(struct db_dirent));
 		dep->name = strdup(s);

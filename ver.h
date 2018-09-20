@@ -1,3 +1,8 @@
-static const char version[] =
-"version 1.3.0+ "
-"2017-12-06 14:33";
+#ifndef VER_H
+#define VER_H
+
+#define VERSION \
+    "1.3.0+ " \
+    "2018-09-20 17:10"
+
+#endif // VER_H

@@ -76,7 +76,7 @@ filediff(void) {
 	offs = 0;
 	left = stat1.st_size;
 	while (left) {
-		len = left < pagesiz ? left : pagesiz;
+		len = left < (off_t)pagesiz ? (size_t)left : (size_t)pagesiz;
 		if ((buf1 = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd1, offs))
 		    == MAP_FAILED) {
 			fprintf(stderr, "%s: mmap \"%s\" failed: %s\n", prog,
@@ -93,7 +93,7 @@ filediff(void) {
 			printf("Different files %s and %s\n", path1, path2);
 			SET_EXIT_DIFF();
 			diff = 1;
-			left = len;
+			left = (off_t)len;
 		}
 		if (msync(buf1, len, MS_INVALIDATE) == -1) {
 			fprintf(stderr, "%s: msync \"%s\" failed: %s\n", prog,
@@ -137,7 +137,7 @@ filediff(void) {
 		}
 
 		if (l1 != l2 ||
-		    memcmp(buff1, buff2, l1)) {
+            memcmp(buff1, buff2, (size_t)l1)) {
 			printf("Different files %s and %s\n", path1, path2);
 			SET_EXIT_DIFF();
 			diff = 1;
@@ -184,7 +184,7 @@ linkdiff(void) {
 	buff2[l2] = 0;
 
 	if (l1 != l2 ||
-	    memcmp(buff1, buff2, l1)) {
+        memcmp(buff1, buff2, (size_t)l1)) {
 		printf("Different links %s -> %s and %s -> %s\n",
 		    path1, buff1, path2, buff2);
 		SET_EXIT_DIFF();

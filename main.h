@@ -1,3 +1,9 @@
+#ifndef MAIN_H
+#define MAIN_H
+
+#include <limits.h>
+#include <sys/types.h>
+
 #define PATH_SIZ (PATH_MAX > 1024*16 ? PATH_MAX : 1024*16) /* for realpath() */
 #define BUFF_SIZ PATH_SIZ
 #define SET_EXIT_DIFF() exit_code = 1
@@ -19,3 +25,5 @@ extern int report_unexpect;
 extern int ign_dir_perm;
 extern int ign_link_time;
 extern short ign_cont;
+
+#endif

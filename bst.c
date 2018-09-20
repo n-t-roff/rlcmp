@@ -37,7 +37,7 @@ void
 proctree(struct bst *tree, void (*proc)(struct bst_node *),
     void (*del)(struct bst *, struct bst_node *)) {
 	struct bst_node *node, *node2;
-	int go_proc;
+    int go_proc = 0;
 	if (!(node = tree->root))
 		return;
 enter_node:
