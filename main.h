@@ -7,13 +7,12 @@
 #define PATH_SIZ (PATH_MAX > 1024*16 ? PATH_MAX : 1024*16) /* for realpath() */
 #define BUFF_SIZ PATH_SIZ
 
-#define SET_EXIT_DIFF() \
-    do { \
-        if (!exit_code) \
-            exit_code = 1; \
-    } while (0)
-
+#define EXIT_DIFF  1
 #define EXIT_ERROR 2
+
+void set_exit_diff(void);
+void set_exit_error(void);
+
 extern char *prog;
 extern char path1[PATH_SIZ];
 extern char path2[PATH_SIZ];
@@ -31,5 +30,7 @@ extern int report_unexpect;
 extern int ign_dir_perm;
 extern int ign_link_time;
 extern short ign_cont;
+extern short quiet;
+extern short exit_on_error;
 
 #endif

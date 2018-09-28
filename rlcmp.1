@@ -5,7 +5,7 @@
 .Nd recursive file compare
 .Sh SYNOPSIS
 .Nm
-.Op Fl AaCDgLmotuV
+.Op Fl OPTIONS
 .Op Fl d Ar depth
 .Op Fl Fl
 .Ar file1
@@ -51,6 +51,8 @@ of
 .Li 0
 means that directories are only entered when they are given as a command
 line argument.
+.It Fl e
+Exit on first error or difference found.
 .It Fl g
 Compare file group.
 .It Fl L
@@ -67,6 +69,8 @@ only in one directory tree (default of
 instead of reporting files which are
 .Em not
 found.
+.It Fl q
+Quiet operation, only set exit status.
 .It Fl t
 Compare modification time (except for directories).
 .It Fl u

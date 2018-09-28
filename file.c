@@ -65,11 +65,13 @@ filediff(void) {
 	if ((fd1 = open(path1, O_RDONLY)) == -1) {
 		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
+        set_exit_error();
 		return -1;
 	}
 	if ((fd2 = open(path2, O_RDONLY)) == -1) {
 		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
+        set_exit_error();
 		goto cls1;
 	}
 #ifdef MMAP_MEMCMP
@@ -123,7 +125,7 @@ filediff(void) {
 		if (l1 == -1) {
 			fprintf(stderr, "%s: read \"%s\" failed: %s\n",
 			    prog, path1, strerror(errno));
-			SET_EXIT_DIFF();
+            set_exit_error();
 			break;
 		}
 
@@ -132,14 +134,14 @@ filediff(void) {
 		if (l2 == -1) {
 			fprintf(stderr, "%s: read \"%s\" failed: %s\n",
 			    prog, path2, strerror(errno));
-			SET_EXIT_DIFF();
+            set_exit_error();
 			break;
 		}
 
 		if (l1 != l2 ||
             memcmp(buff1, buff2, (size_t)l1)) {
 			printf("Different files %s and %s\n", path1, path2);
-			SET_EXIT_DIFF();
+            set_exit_diff();
 			diff = 1;
 			break;
 		}
@@ -171,12 +173,14 @@ linkdiff(void) {
 	if ((l1 = readlink(path1, buff1, sizeof(buff1) - 1)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
+        set_exit_error();
 		return -1;
 	}
 
 	if ((l2 = readlink(path2, buff2, sizeof(buff2) - 1)) == -1) {
 		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
+        set_exit_error();
 		return -1;
 	}
 
@@ -187,7 +191,7 @@ linkdiff(void) {
         memcmp(buff1, buff2, (size_t)l1)) {
 		printf("Different links %s -> %s and %s -> %s\n",
 		    path1, buff1, path2, buff2);
-		SET_EXIT_DIFF();
+        set_exit_diff();
 		return 1;
 	}
 

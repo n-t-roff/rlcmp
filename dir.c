@@ -111,6 +111,7 @@ dircmp(void) {
 	if (!(dir = opendir(path1))) {
 		fprintf(stderr, "%s: opendir \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
+        set_exit_error();
 		return;
 	}
 	while (1) {
@@ -151,6 +152,7 @@ dircmp(void) {
 	if (!(dir = opendir(path2))) {
 		fprintf(stderr, "%s: opendir \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
+        set_exit_error();
 		return;
 	}
 	while (1) {
@@ -239,12 +241,14 @@ typetest(int *st)
 	if (lstat(path1, &stat1) == -1) {
 		fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog,
 		    path1, strerror(errno));
+        set_exit_error();
 		stat1.st_mode = 0;
 	}
 
 	if (lstat(path2, &stat2) == -1) {
 		fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog,
 		    path2, strerror(errno));
+        set_exit_error();
 		stat2.st_mode = 0;
 	}
 
@@ -254,27 +258,29 @@ typetest(int *st)
 		if (st)
 			*st = DEL_NODE;
 
-		SET_EXIT_DIFF();
+        set_exit_diff();
 		return;
 	}
 
-	if (stat1.st_ino == stat2.st_ino &&
-	    stat1.st_dev == stat2.st_dev)
-		return;
+    if (stat1.st_ino == stat2.st_ino &&
+            stat1.st_dev == stat2.st_dev)
+        return;
 
-	if ((stat1.st_mode & S_IFMT) != (stat2.st_mode & S_IFMT)) {
-		printf("Different file types for %s (", path1);
-		print_type(stat1.st_mode, 0);
-		printf(") and %s (", path2);
-		print_type(stat2.st_mode, 0);
-		printf(")\n");
+    if ((stat1.st_mode & S_IFMT) != (stat2.st_mode & S_IFMT)) {
+        if (!quiet) {
+            printf("Different file types for %s (", path1);
+            print_type(stat1.st_mode, 0);
+            printf(") and %s (", path2);
+            print_type(stat2.st_mode, 0);
+            printf(")\n");
+        }
 
-		if (st)
-			*st = DEL_NODE;
+        if (st)
+            *st = DEL_NODE;
 
-		SET_EXIT_DIFF();
-		return;
-	}
+        set_exit_diff();
+        return;
+    }
 
 	if (S_ISDIR(stat1.st_mode)) {
 		if (!st) /* Called from main() */
@@ -288,18 +294,20 @@ typetest(int *st)
 		return;
 	}
 
-	if (st)
-		*st = DEL_NODE;
+    if (st)
+        *st = DEL_NODE;
 
-	if (stat1.st_size != stat2.st_size) {
-		printf("Different sizes for ");
-		print_type(stat1.st_mode, 1);
-		printf("s %s (%ju) and %s (%ju)\n", path1,
-		    (uintmax_t)stat1.st_size, path2,
-		    (uintmax_t)stat2.st_size);
-		SET_EXIT_DIFF();
-		return;
-	}
+    if (stat1.st_size != stat2.st_size) {
+        if (!quiet) {
+            printf("Different sizes for ");
+            print_type(stat1.st_mode, 1);
+            printf("s %s (%ju) and %s (%ju)\n", path1,
+                   (uintmax_t)stat1.st_size, path2,
+                   (uintmax_t)stat2.st_size);
+        }
+        set_exit_diff();
+        return;
+    }
 
     if (S_ISREG(stat1.st_mode)) {
         if (stat1.st_size && filediff())
@@ -311,14 +319,16 @@ typetest(int *st)
 
     } else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
         if (stat1.st_rdev != stat2.st_rdev) {
-            printf("Different %s devices %s (%lu, %lu) and "
-                   "%s (%lu, %lu)\n",
-                   S_ISCHR(stat1.st_mode) ? "character" : "block",
-                   path1, (unsigned long)major(stat1.st_rdev),
-                   (unsigned long)minor(stat1.st_rdev),
-                   path2, (unsigned long)major(stat2.st_rdev),
-                   (unsigned long)minor(stat2.st_rdev));
-            SET_EXIT_DIFF();
+            if (!quiet) {
+                printf("Different %s devices %s (%lu, %lu) and "
+                       "%s (%lu, %lu)\n",
+                       S_ISCHR(stat1.st_mode) ? "character" : "block",
+                       path1, (unsigned long)major(stat1.st_rdev),
+                       (unsigned long)minor(stat1.st_rdev),
+                       path2, (unsigned long)major(stat2.st_rdev),
+                       (unsigned long)minor(stat2.st_rdev));
+            }
+            set_exit_diff();
             return;
         }
     } else {
@@ -338,59 +348,69 @@ typetest(int *st)
 
 static void
 time_cmp(void) {
-	if ((!ign_link_time || !S_ISLNK(stat1.st_mode)) &&
-	    stat1.st_mtime != stat2.st_mtime) {
-		printf("Different modification time for ");
-		print_type(stat1.st_mode, 1);
-		printf("s %s (", path1);
-		print_time(stat1.st_mtime);
-		printf(") and %s (", path2);
-		print_time(stat2.st_mtime);
-		printf(")\n");
-		SET_EXIT_DIFF();
-	}
+    if ((!ign_link_time || !S_ISLNK(stat1.st_mode)) &&
+            stat1.st_mtime != stat2.st_mtime)
+    {
+        if (!quiet) {
+            printf("Different modification time for ");
+            print_type(stat1.st_mode, 1);
+            printf("s %s (", path1);
+            print_time(stat1.st_mtime);
+            printf(") and %s (", path2);
+            print_time(stat2.st_mtime);
+            printf(")\n");
+        }
+        set_exit_diff();
+    }
 }
 
 static void
 perm_cmp(void) {
-	if (!S_ISLNK(stat1.st_mode) &&
-	    (!ign_dir_perm || !S_ISDIR(stat1.st_mode)) &&
-	    (stat1.st_mode != stat2.st_mode)) {
-		printf("Different permissions for ");
-		print_type(stat1.st_mode, 1);
-		printf("s %s (%04o) and %s (%04o)\n",
-		    path1, (unsigned)stat1.st_mode & 07777,
-		    path2, (unsigned)stat2.st_mode & 07777);
-		SET_EXIT_DIFF();
-	}
+    if (!S_ISLNK(stat1.st_mode) &&
+            (!ign_dir_perm || !S_ISDIR(stat1.st_mode)) &&
+            (stat1.st_mode != stat2.st_mode))
+    {
+        if (!quiet) {
+            printf("Different permissions for ");
+            print_type(stat1.st_mode, 1);
+            printf("s %s (%04o) and %s (%04o)\n",
+                   path1, (unsigned)stat1.st_mode & 07777,
+                   path2, (unsigned)stat2.st_mode & 07777);
+        }
+        set_exit_diff();
+    }
 }
 
 static void
 usr_cmp(void) {
-	if (stat1.st_uid != stat2.st_uid) {
-		printf("Different file owner for ");
-		print_type(stat1.st_mode, 1);
-		printf("s %s (", path1);
-		print_uid(stat1.st_uid);
-		printf(") and %s (", path2);
-		print_uid(stat2.st_uid);
-		printf(")\n");
-		SET_EXIT_DIFF();
-	}
+    if (stat1.st_uid != stat2.st_uid) {
+        if (!quiet) {
+            printf("Different file owner for ");
+            print_type(stat1.st_mode, 1);
+            printf("s %s (", path1);
+            print_uid(stat1.st_uid);
+            printf(") and %s (", path2);
+            print_uid(stat2.st_uid);
+            printf(")\n");
+        }
+        set_exit_diff();
+    }
 }
 
 static void
 grp_cmp(void) {
-	if (stat1.st_gid != stat2.st_gid) {
-		printf("Different group ID for ");
-		print_type(stat1.st_mode, 1);
-		printf("s %s (", path1);
-		print_gid(stat1.st_gid);
-		printf(") and %s (", path2);
-		print_gid(stat2.st_gid);
-		printf(")\n");
-		SET_EXIT_DIFF();
-	}
+    if (stat1.st_gid != stat2.st_gid) {
+        if (!quiet) {
+            printf("Different group ID for ");
+            print_type(stat1.st_mode, 1);
+            printf("s %s (", path1);
+            print_gid(stat1.st_gid);
+            printf(") and %s (", path2);
+            print_gid(stat2.st_gid);
+            printf(")\n");
+        }
+        set_exit_diff();
+    }
 }
 
 static void
@@ -472,22 +492,26 @@ procfile(char *s, int *st)
 #endif
 	size_t l;
 
-	switch (*st) {
-	case FILE_NOENT1:
-		if (report_unexpect)
-			printf("Only in %s: %s\n", path2, s);
-		else
-			printf("Not in %s: %s\n", path1, s);
-
-		return;
-	case FILE_NOENT2:
-		if (report_unexpect)
-			printf("Only in %s: %s\n", path1, s);
-		else
-			printf("Not in %s: %s\n", path2, s);
-
-		return;
-	}
+    switch (*st) {
+    case FILE_NOENT1:
+        if (!quiet) {
+            if (report_unexpect)
+                printf("Only in %s: %s\n", path2, s);
+            else
+                printf("Not in %s: %s\n", path1, s);
+        }
+        set_exit_diff();
+        return;
+    case FILE_NOENT2:
+        if (!quiet) {
+            if (report_unexpect)
+                printf("Only in %s: %s\n", path1, s);
+            else
+                printf("Not in %s: %s\n", path2, s);
+        }
+        set_exit_diff();
+        return;
+    }
 
 	l = strlen(s);
 

@@ -58,6 +58,8 @@ int report_unexpect;
 int ign_dir_perm;
 int ign_link_time;
 short ign_cont;
+short quiet;
+short exit_on_error;
 
 static void usage(const char *) __attribute__ ((noreturn));
 
@@ -88,7 +90,10 @@ main(int argc, char **argv) {
 			case 'C':
 				ign_cont = 1;
 				break;
-			case 'd':
+            case 'D':
+                ign_dir_perm = 1;
+                break;
+            case 'd':
 				cmp_depth = 1;
 				arg = ++s;
 				if (!(c = *arg) && --argc) {
@@ -100,6 +105,9 @@ main(int argc, char **argv) {
 					    "number as argument");
 				depth = atoi(arg);
 				goto next;
+            case 'e':
+                exit_on_error = 1;
+                break;
 			case 'g':
 				cmp_grp  = 1;
 				break;
@@ -112,9 +120,9 @@ main(int argc, char **argv) {
 			case 'o':
 				report_unexpect = 1;
 				break;
-			case 'D':
-				ign_dir_perm = 1;
-				break;
+            case 'q':
+                quiet = 1;
+                break;
 			case 't':
 				cmp_time = 1;
 				break;
@@ -204,10 +212,19 @@ next:
 
 static void usage(const char *s) {
 	if (s)
-		fprintf(stderr, "%s: %s\n", prog, s);
-
-	fprintf(stderr,
-"Usage: %s [-AaCDgLmotuV] [-d<depth>] [--] <file1> <file2>\n",
-	    prog);
+        fprintf(stderr, "%s: %s\n", prog, s);
 	exit(EXIT_ERROR);
+}
+
+void set_exit_diff(void) {
+    if (!exit_code)
+        exit_code = EXIT_DIFF;
+    if (exit_on_error)
+        exit(exit_code);
+}
+
+void set_exit_error(void) {
+    exit_code = EXIT_ERROR;
+    if (exit_on_error)
+        exit(exit_code);
 }
