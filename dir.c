@@ -301,36 +301,39 @@ typetest(int *st)
 		return;
 	}
 
-	if (S_ISREG(stat1.st_mode)) {
-		if (stat1.st_size && filediff())
-			return;
+    if (S_ISREG(stat1.st_mode)) {
+        if (stat1.st_size && filediff())
+            return;
 
-	} else if (S_ISLNK(stat1.st_mode)) {
-		if (stat1.st_size && linkdiff())
-			return;
+    } else if (S_ISLNK(stat1.st_mode)) {
+        if (stat1.st_size && linkdiff())
+            return;
 
-	} else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
-		if (stat1.st_rdev != stat2.st_rdev) {
-			printf("Different %s devices %s (%lu, %lu) and "
-			    "%s (%lu, %lu)\n",
-			    S_ISCHR(stat1.st_mode) ? "character" : "block",
-			    path1, (unsigned long)major(stat1.st_rdev),
-			           (unsigned long)minor(stat1.st_rdev),
-			    path2, (unsigned long)major(stat2.st_rdev),
-			           (unsigned long)minor(stat2.st_rdev));
-			SET_EXIT_DIFF();
-			return;
-		}
-	}
+    } else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
+        if (stat1.st_rdev != stat2.st_rdev) {
+            printf("Different %s devices %s (%lu, %lu) and "
+                   "%s (%lu, %lu)\n",
+                   S_ISCHR(stat1.st_mode) ? "character" : "block",
+                   path1, (unsigned long)major(stat1.st_rdev),
+                   (unsigned long)minor(stat1.st_rdev),
+                   path2, (unsigned long)major(stat2.st_rdev),
+                   (unsigned long)minor(stat2.st_rdev));
+            SET_EXIT_DIFF();
+            return;
+        }
+    } else {
+        fprintf(stderr, "%s: %s: Unsupported file type\n", prog, path1);
+        exit_code = EXIT_ERROR;
+    }
 
-	if (cmp_time)
-		time_cmp();
-	if (cmp_perm)
-		perm_cmp();
-	if (cmp_usr)
-		usr_cmp();
-	if (cmp_grp)
-		grp_cmp();
+    if (cmp_time)
+        time_cmp();
+    if (cmp_perm)
+        perm_cmp();
+    if (cmp_usr)
+        usr_cmp();
+    if (cmp_grp)
+        grp_cmp();
 }
 
 static void
