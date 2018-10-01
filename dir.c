@@ -51,6 +51,7 @@
 #include "main.h"
 #include "dir.h"
 #include "file.h"
+#include "output.h"
 
 struct stat stat1;
 
@@ -109,8 +110,7 @@ dircmp(void) {
 #endif
 
 	if (!(dir = opendir(path1))) {
-		fprintf(stderr, "%s: opendir \"%s\" failed: %s\n", prog,
-		    path1, strerror(errno));
+        error("opendir(%s): %s\n", path1, strerror(errno));
         set_exit_error();
 		return;
 	}
@@ -120,9 +120,7 @@ dircmp(void) {
 		errno = 0;
 		if (!(dirent = readdir(dir))) {
 			if (errno) {
-				fprintf(stderr,
-				    "%s: readdir \"%s\" failed: %s\n",
-				    prog, path1, strerror(errno));
+                error("readdir(%s): %s\n", path1, strerror(errno));
 				exit(EXIT_ERROR);
 			}
 			break;
@@ -145,13 +143,11 @@ dircmp(void) {
 #endif
 	}
 	if (closedir(dir) == -1) {
-		fprintf(stderr, "%s: closedir \"%s\" failed: %s\n", prog,
-		    path1, strerror(errno));
+        error("closedir(%s): %s\n", path1, strerror(errno));
 		exit(EXIT_ERROR);
 	}
 	if (!(dir = opendir(path2))) {
-		fprintf(stderr, "%s: opendir \"%s\" failed: %s\n", prog,
-		    path2, strerror(errno));
+        error("opendir(%s): %s\n", path2, strerror(errno));
         set_exit_error();
 		return;
 	}
@@ -165,9 +161,7 @@ dircmp(void) {
 		errno = 0;
 		if (!(dirent = readdir(dir))) {
 			if (errno) {
-				fprintf(stderr,
-				    "%s: readdir \"%s\" failed: %s\n",
-				    prog, path1, strerror(errno));
+                error("readdir(%s): %s\n", path1, strerror(errno));
 				exit(EXIT_ERROR);
 			}
 			break;
@@ -206,8 +200,7 @@ dircmp(void) {
 	}
 
 	if (closedir(dir) == -1) {
-		fprintf(stderr, "%s: closedir \"%s\" failed: %s\n", prog,
-		    path2, strerror(errno));
+        error("closedir(%s): %s\n", path2, strerror(errno));
 		exit(EXIT_ERROR);
 	}
 	path1[path1len++] = '/';
@@ -239,15 +232,13 @@ void
 typetest(int *st)
 {
 	if (lstat(path1, &stat1) == -1) {
-		fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog,
-		    path1, strerror(errno));
+        error("lstat(%s): %s\n", path1, strerror(errno));
         set_exit_error();
 		stat1.st_mode = 0;
 	}
 
 	if (lstat(path2, &stat2) == -1) {
-		fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog,
-		    path2, strerror(errno));
+        error("lstat(%s): %s\n", path2, strerror(errno));
         set_exit_error();
 		stat2.st_mode = 0;
 	}
@@ -268,7 +259,7 @@ typetest(int *st)
 
     if ((stat1.st_mode & S_IFMT) != (stat2.st_mode & S_IFMT)) {
         if (!quiet) {
-            printf("Different file types for %s (", path1);
+            output("Different file types for %s (", path1);
             print_type(stat1.st_mode, 0);
             printf(") and %s (", path2);
             print_type(stat2.st_mode, 0);
@@ -299,7 +290,7 @@ typetest(int *st)
 
     if (stat1.st_size != stat2.st_size) {
         if (!quiet) {
-            printf("Different sizes for ");
+            output("Different sizes for ");
             print_type(stat1.st_mode, 1);
             printf("s %s (%ju) and %s (%ju)\n", path1,
                    (uintmax_t)stat1.st_size, path2,
@@ -320,7 +311,7 @@ typetest(int *st)
     } else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
         if (stat1.st_rdev != stat2.st_rdev) {
             if (!quiet) {
-                printf("Different %s devices %s (%lu, %lu) and "
+                output("Different %s devices %s (%lu, %lu) and "
                        "%s (%lu, %lu)\n",
                        S_ISCHR(stat1.st_mode) ? "character" : "block",
                        path1, (unsigned long)major(stat1.st_rdev),
@@ -332,7 +323,7 @@ typetest(int *st)
             return;
         }
     } else {
-        fprintf(stderr, "%s: %s: Unsupported file type\n", prog, path1);
+        error("%s: Unsupported file type\n", path1);
         exit_code = EXIT_ERROR;
     }
 
@@ -352,7 +343,7 @@ time_cmp(void) {
             stat1.st_mtime != stat2.st_mtime)
     {
         if (!quiet) {
-            printf("Different modification time for ");
+            output("Different modification time for ");
             print_type(stat1.st_mode, 1);
             printf("s %s (", path1);
             print_time(stat1.st_mtime);
@@ -371,7 +362,7 @@ perm_cmp(void) {
             (stat1.st_mode != stat2.st_mode))
     {
         if (!quiet) {
-            printf("Different permissions for ");
+            output("Different permissions for ");
             print_type(stat1.st_mode, 1);
             printf("s %s (%04o) and %s (%04o)\n",
                    path1, (unsigned)stat1.st_mode & 07777,
@@ -385,7 +376,7 @@ static void
 usr_cmp(void) {
     if (stat1.st_uid != stat2.st_uid) {
         if (!quiet) {
-            printf("Different file owner for ");
+            output("Different file owner for ");
             print_type(stat1.st_mode, 1);
             printf("s %s (", path1);
             print_uid(stat1.st_uid);
@@ -401,7 +392,7 @@ static void
 grp_cmp(void) {
     if (stat1.st_gid != stat2.st_gid) {
         if (!quiet) {
-            printf("Different group ID for ");
+            output("Different group ID for ");
             print_type(stat1.st_mode, 1);
             printf("s %s (", path1);
             print_gid(stat1.st_gid);
@@ -496,18 +487,18 @@ procfile(char *s, int *st)
     case FILE_NOENT1:
         if (!quiet) {
             if (report_unexpect)
-                printf("Only in %s: %s\n", path2, s);
+                output("Only in %s: %s\n", path2, s);
             else
-                printf("Not in %s: %s\n", path1, s);
+                output("Not in %s: %s\n", path1, s);
         }
         set_exit_diff();
         return;
     case FILE_NOENT2:
         if (!quiet) {
             if (report_unexpect)
-                printf("Only in %s: %s\n", path1, s);
+                output("Only in %s: %s\n", path1, s);
             else
-                printf("Not in %s: %s\n", path2, s);
+                output("Not in %s: %s\n", path2, s);
         }
         set_exit_diff();
         return;
@@ -634,5 +625,5 @@ dirent_cmp(const void *a, const void *b)
 
 static void
 pathtoolong(char *p, char *f) {
-	fprintf(stderr, "%s: Path buffer overflow for %s/%s\n", prog, p, f);
+    error("Path buffer overflow for %s/%s\n", p, f);
 }

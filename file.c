@@ -41,6 +41,9 @@
 #include "main.h"
 #include "dir.h"
 #include "file.h"
+#include "summary.h"
+#include "progress.h"
+#include "output.h"
 
 static char buff1[BUFF_SIZ];
 static char buff2[BUFF_SIZ];
@@ -59,21 +62,21 @@ filediff(void) {
 	ssize_t l1, l2;
 #endif
 
-	if (ign_cont) {
-		return 0;
-	}
-	if ((fd1 = open(path1, O_RDONLY)) == -1) {
-		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
-		    path1, strerror(errno));
+    if (ign_cont) {
+        return 0;
+    }
+    if (progress)
+        show_progress(path1, buff1);
+    if ((fd1 = open(path1, O_RDONLY)) == -1) {
+        error("open(%s): %s\n", path1, strerror(errno));
         set_exit_error();
-		return -1;
-	}
-	if ((fd2 = open(path2, O_RDONLY)) == -1) {
-		fprintf(stderr, "%s: open \"%s\" failed: %s\n", prog,
-		    path2, strerror(errno));
+        return -1;
+    }
+    if ((fd2 = open(path2, O_RDONLY)) == -1) {
+        error("open(%s): %s\n", path2, strerror(errno));
         set_exit_error();
-		goto cls1;
-	}
+        goto cls1;
+    }
 #ifdef MMAP_MEMCMP
 	offs = 0;
 	left = stat1.st_size;
@@ -121,44 +124,39 @@ filediff(void) {
 #else
 	while (1) {
 		l1 = read(fd1, buff1, BUFF_SIZ);
-
 		if (l1 == -1) {
-			fprintf(stderr, "%s: read \"%s\" failed: %s\n",
-			    prog, path1, strerror(errno));
+            error("read(%s): %s\n", path1, strerror(errno));
             set_exit_error();
 			break;
 		}
 
 		l2 = read(fd2, buff2, BUFF_SIZ);
-
 		if (l2 == -1) {
-			fprintf(stderr, "%s: read \"%s\" failed: %s\n",
-			    prog, path2, strerror(errno));
+            error("read(%s): %s\n", path2, strerror(errno));
             set_exit_error();
 			break;
 		}
-
 		if (l1 != l2 ||
             memcmp(buff1, buff2, (size_t)l1)) {
-			printf("Different files %s and %s\n", path1, path2);
+            output("Different files %s and %s\n", path1, path2);
             set_exit_diff();
 			diff = 1;
 			break;
 		}
+        total_byte_count += l1;
 
 		if (l1 < BUFF_SIZ)
 			break;
 	}
+    ++total_file_count;
 #endif
 	if (close(fd2) == -1) {
-		fprintf(stderr, "%s: close \"%s\" failed: %s\n", prog,
-		    path2, strerror(errno));
+        error("close(%s): %s\n", path2, strerror(errno));
 		exit(EXIT_ERROR);
 	}
 cls1:
 	if (close(fd1) == -1) {
-		fprintf(stderr, "%s: close \"%s\" failed: %s\n", prog,
-		    path1, strerror(errno));
+        error("close(%s): %s\n", path1, strerror(errno));
 		exit(EXIT_ERROR);
 	}
 	return diff;
@@ -171,15 +169,13 @@ linkdiff(void) {
 	ssize_t l1, l2;
 
 	if ((l1 = readlink(path1, buff1, sizeof(buff1) - 1)) == -1) {
-		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
-		    path1, strerror(errno));
+        error("readlink(%s): %s\n", path1, strerror(errno));
         set_exit_error();
 		return -1;
 	}
 
 	if ((l2 = readlink(path2, buff2, sizeof(buff2) - 1)) == -1) {
-		fprintf(stderr, "%s: readlink \"%s\" failed: %s\n", prog,
-		    path2, strerror(errno));
+        error("readlink(%s): %s\n", path2, strerror(errno));
         set_exit_error();
 		return -1;
 	}
@@ -189,11 +185,12 @@ linkdiff(void) {
 
 	if (l1 != l2 ||
         memcmp(buff1, buff2, (size_t)l1)) {
-		printf("Different links %s -> %s and %s -> %s\n",
+        output("Different links %s -> %s and %s -> %s\n",
 		    path1, buff1, path2, buff2);
         set_exit_diff();
 		return 1;
 	}
-
+    total_byte_count += l1;
+    ++total_file_count;
 	return 0;
 }

@@ -1,4 +1,4 @@
-.Dd September 23, 2017
+.Dd October 1, 2018
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
@@ -69,8 +69,15 @@ only in one directory tree (default of
 instead of reporting files which are
 .Em not
 found.
+.It Fl p
+Output progress information:
+Every ten seconds print number of files and bytes processed
+and the currently compared file name.
 .It Fl q
 Quiet operation, only set exit status.
+.It Fl s
+Output summary:
+Print number of files and bytes processed.
 .It Fl t
 Compare modification time (except for directories).
 .It Fl u

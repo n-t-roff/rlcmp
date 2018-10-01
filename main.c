@@ -36,15 +36,20 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <locale.h>
 #include "ver.h"
 #include "main.h"
 #include "dir.h"
+#include "term_info.h"
+#include "summary.h"
+#include "progress.h"
 
 char *prog;
 char path1[PATH_SIZ];
 char path2[PATH_SIZ];
 size_t path1len;
 size_t path2len;
+size_t ini_path1len;
 long pagesiz;
 int exit_code;
 static char **args;
@@ -68,6 +73,7 @@ main(int argc, char **argv) {
 	static int noopts;
 	static char *s;
 	static int c;
+    setlocale(LC_ALL, "");
 	prog = *argv++;
 	argc--;
 	while (!noopts && argc && *(s = *argv) == '-') {
@@ -120,8 +126,14 @@ main(int argc, char **argv) {
 			case 'o':
 				report_unexpect = 1;
 				break;
+            case 'p':
+                progress = 1;
+                break;
             case 'q':
                 quiet = 1;
+                break;
+            case 's':
+                summary = 1;
                 break;
 			case 't':
 				cmp_time = 1;
@@ -167,7 +179,7 @@ next:
 		exit(EXIT_ERROR);
 	}
 
-	path1len = strlen(path1);
+    ini_path1len = path1len = strlen(path1);
 	argv++;
 
 	if (!realpath(*argv, path2)) {
@@ -176,7 +188,7 @@ next:
 		exit(EXIT_ERROR);
 	}
 
-	path2len = strlen(path2);
+    path2len = strlen(path2);
 
 	if (stat(path1, &stat1) == -1) {
 		fprintf(stderr, "%s: stat \"%s\" failed: %s\n", prog, path1,
@@ -205,9 +217,13 @@ next:
 		return EXIT_ERROR;
 	}
 #endif
-
-	typetest(NULL);
-	return exit_code;
+    term_info_init();
+    typetest(NULL);
+    if (summary) {
+        clear_progress_line();
+        output_summary();
+    }
+    return exit_code;
 }
 
 static void usage(const char *s) {

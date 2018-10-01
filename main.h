@@ -18,6 +18,7 @@ extern char path1[PATH_SIZ];
 extern char path2[PATH_SIZ];
 extern size_t path1len;
 extern size_t path2len;
+extern size_t ini_path1len;
 extern long pagesiz;
 extern int exit_code;
 extern int cmp_perm;

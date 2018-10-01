@@ -1,23 +1,29 @@
-BIN=		rlcmp
-PREFIX=		/usr/local
-BINDIR=		$(PREFIX)/bin
-MANDIR=		$(PREFIX)/share/man
-INCDIR=		$(PREFIX)/include
-LIBDIR=		$(PREFIX)/lib
+BIN = rlcmp
+PREFIX = /usr/local
+BINDIR = $(PREFIX)/bin
+MANDIR = $(PREFIX)/share/man
+INCDIR = $(PREFIX)/include
+LIBDIR = $(PREFIX)/lib
 
-STRP=		-s
+STRP = -s
 # Remove comment to enable mmap(2) + memcmp(3).  Else read(2) + memcmp(3) is
 # used.  While it had been stated that mmap is faster than read, benchmarks
 # on modern systems show that read(2) ist faster.
-MMAP=		#-DMMAP_MEMCMP
+MMAP = #-DMMAP_MEMCMP
 
-OBJ=		main.o dir.o bst.o file.o
-_CFLAGS=	$(CFLAGS) $(CPPFLAGS) $(DEFINES) \
-		$(__CDBG) $(__CLDBG) \
-		$(MMAP)
-_LDFLAGS=	$(LDFLAGS) $(__CLDBG) -L${LIBDIR} -Wl,-rpath,${LIBDIR} \
-		$(STRP)
-LDADD=		$(LIB_AVLBST)
+OBJ = \
+	main.o dir.o bst.o file.o term_info.o summary.o progress.o \
+	output.o
+_CFLAGS = \
+	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__CLDBG) \
+	-I$(INCDIR) \
+	$(INCDIR_CURSES) \
+	$(MMAP)
+_LDFLAGS = \
+	$(LDFLAGS) $(__CLDBG) $(STRP) \
+	-L${LIBDIR} -Wl,-rpath,${LIBDIR} \
+	$(RPATH_CURSES) $(LIBDIR_CURSES)
+LDADD = $(LIB_AVLBST) $(LIB_CURSES)
 
 all: $(BIN)
 
@@ -33,7 +39,7 @@ clean:
 	rm -f $(BIN) $(OBJ) *.gc??
 
 distclean: clean
-	rm -f Makefile config.log
+	rm -f Makefile config.log compat.h
 
 $(BINDIR) $(MANDIR)/man1:
 	mkdir -p $@

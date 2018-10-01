@@ -6,13 +6,21 @@ HEADERS = \
    dir.h \
    file.h \
    main.h \
-    ver.h
+    ver.h \
+    term_info.h \
+    summary.h \
+    progress.h \
+    output.h
 
 SOURCES = \
    bst.c \
    dir.c \
    file.c \
-   main.c
+   main.c \
+    term_info.c \
+    summary.c \
+    progress.c \
+    output.c
 
 DEFINES = \
     HAVE_LIBAVLBST \
