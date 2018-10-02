@@ -71,13 +71,17 @@ instead of reporting files which are
 found.
 .It Fl p
 Output progress information:
-Every ten seconds print number of files and bytes processed
-and the currently compared file name.
+Every ten seconds print the elapsed wall time,
+number of processed files (suffix
+.Cm F ) ,
+number of processed bytes (suffix
+.Cm B ) ,
+and the currently compared file.
 .It Fl q
 Quiet operation, only set exit status.
 .It Fl s
 Output summary:
-Print number of files and bytes processed.
+Print elapsed wall time, number of files and bytes processed.
 .It Fl t
 Compare modification time (except for directories).
 .It Fl u

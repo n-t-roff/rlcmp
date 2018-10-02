@@ -218,9 +218,11 @@ next:
 	}
 #endif
     term_info_init();
+    progress_init();
     typetest(NULL);
     if (summary) {
         clear_progress_line();
+        print_time();
         output_summary();
     }
     return exit_code;
