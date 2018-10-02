@@ -88,8 +88,6 @@ static int dirent_cmp(const void *, const void *);
 static void *dirents;
 #endif
 
-static DIR *dir;
-static struct dirent *dirent;
 struct stat stat2;
 
 #define FILE_NOENT1 0 /* Not in path1 */
@@ -108,24 +106,23 @@ dircmp(void) {
 	void *bst = dirents;
 	dirents = NULL;
 #endif
-
-	if (!(dir = opendir(path1))) {
+    DIR *dir  = opendir(path1);
+    if (!dir) {
         error("opendir(%s): %s\n", path1, strerror(errno));
         set_exit_error();
 		return;
 	}
 	while (1) {
-		char *s;
-
 		errno = 0;
-		if (!(dirent = readdir(dir))) {
+        const struct dirent *dirent = readdir(dir);
+        if (!dirent) {
 			if (errno) {
                 error("readdir(%s): %s\n", path1, strerror(errno));
 				exit(EXIT_ERROR);
 			}
 			break;
 		}
-		s = dirent->d_name;
+        const char *s = dirent->d_name;
 
 		if (*s == '.' && (!s[1] || (s[1] == '.' && !s[2])))
 			continue;
@@ -152,28 +149,27 @@ dircmp(void) {
 		return;
 	}
 	while (1) {
-		char *s;
 #ifdef HAVE_LIBAVLBST
 		struct bst_node *n;
 		int i;
 #endif
-
 		errno = 0;
-		if (!(dirent = readdir(dir))) {
+        const struct dirent *dirent = readdir(dir);
+        if (!dirent) {
 			if (errno) {
                 error("readdir(%s): %s\n", path1, strerror(errno));
 				exit(EXIT_ERROR);
 			}
 			break;
 		}
-		s = dirent->d_name;
+        const char *s = dirent->d_name;
 
 		if (*s == '.' && (!s[1] || (s[1] == '.' && !s[2])))
 			continue;
 
 #ifdef HAVE_LIBAVLBST
         union bst_val k, v;
-        k.p = s;
+        k.cp = s;
         if ((i = bst_srch(&dirents, k, &n))) {
             k.p = strdup(s);
             v.i = FILE_NOENT1;
@@ -310,15 +306,13 @@ typetest(int *st)
 
     } else if (S_ISCHR(stat1.st_mode) || S_ISBLK(stat1.st_mode)) {
         if (stat1.st_rdev != stat2.st_rdev) {
-            if (!quiet) {
-                output("Different %s devices %s (%lu, %lu) and "
-                       "%s (%lu, %lu)\n",
-                       S_ISCHR(stat1.st_mode) ? "character" : "block",
-                       path1, (unsigned long)major(stat1.st_rdev),
-                       (unsigned long)minor(stat1.st_rdev),
-                       path2, (unsigned long)major(stat2.st_rdev),
-                       (unsigned long)minor(stat2.st_rdev));
-            }
+            output("Different %s devices %s (%lu, %lu) and "
+                   "%s (%lu, %lu)\n",
+                   S_ISCHR(stat1.st_mode) ? "character" : "block",
+                   path1, (unsigned long)major(stat1.st_rdev),
+                   (unsigned long)minor(stat1.st_rdev),
+                   path2, (unsigned long)major(stat2.st_rdev),
+                   (unsigned long)minor(stat2.st_rdev));
             set_exit_diff();
             return;
         }
@@ -481,41 +475,32 @@ static void
 procfile(char *s, int *st)
 {
 #endif
-	size_t l;
-
     switch (*st) {
     case FILE_NOENT1:
-        if (!quiet) {
-            if (report_unexpect)
-                output("Only in %s: %s\n", path2, s);
-            else
-                output("Not in %s: %s\n", path1, s);
-        }
+        if (report_unexpect)
+            output("Only in %s: %s\n", path2, s);
+        else
+            output("Not in %s: %s\n", path1, s);
         set_exit_diff();
         return;
     case FILE_NOENT2:
-        if (!quiet) {
-            if (report_unexpect)
-                output("Only in %s: %s\n", path1, s);
-            else
-                output("Not in %s: %s\n", path2, s);
-        }
+        if (report_unexpect)
+            output("Only in %s: %s\n", path1, s);
+        else
+            output("Not in %s: %s\n", path2, s);
         set_exit_diff();
         return;
     }
-
-	l = strlen(s);
+    const size_t l = strlen(s);
 
 	if (path1len + l > PATH_SIZ) {
 		pathtoolong(path1, s);
 		return;
 	}
-
 	if (path2len + l > PATH_SIZ) {
 		pathtoolong(path2, s);
 		return;
 	}
-
 	memcpy(path1 + path1len, s, l);
 	path1[path1len + l] = 0;
 	memcpy(path2 + path2len, s, l);
@@ -567,27 +552,22 @@ static void
 procdir(char *s)
 {
 #endif
-	size_t l;
-
 	if (cmp_depth) {
 		if (depth)
 			depth--;
 		else
 			return;
 	}
-
-	l = strlen(s);
+    const size_t l = strlen(s);
 
 	if (path1len + l > PATH_SIZ) {
 		pathtoolong(path1, s);
 		return;
 	}
-
 	if (path2len + l > PATH_SIZ) {
 		pathtoolong(path2, s);
 		return;
 	}
-
 	memcpy(path1 + path1len, s, l);
 	memcpy(path2 + path2len, s, l);
 	path1len += l;

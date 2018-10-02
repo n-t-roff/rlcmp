@@ -15,6 +15,8 @@ void output_init(const char *const prog, const bool quiet,
 }
 
 int output(const char *const fmt, ...) {
+    if (quiet_)
+        return 0;
     pre_cmd_();
     va_list ap;
     va_start(ap, fmt);

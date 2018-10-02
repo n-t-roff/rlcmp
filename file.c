@@ -52,27 +52,27 @@ static char buff2[BUFF_SIZ];
 
 int
 filediff(void) {
-	int fd1, fd2;
 	int diff = 0;
 #ifdef MMAP_MEMCMP
 	off_t offs, left;
 	size_t len;
 	char *buf1, *buf2;
-#else
-	ssize_t l1, l2;
 #endif
-
     if (ign_cont) {
+        ++total_file_count; /* -C: Only count files */
         return 0;
     }
     if (progress)
         show_progress(path1, buff1);
-    if ((fd1 = open(path1, O_RDONLY)) == -1) {
+
+    const int fd1 = open(path1, O_RDONLY);
+    if (fd1 == -1) {
         error("open(%s): %s\n", path1, strerror(errno));
         set_exit_error();
         return -1;
     }
-    if ((fd2 = open(path2, O_RDONLY)) == -1) {
+    const int fd2 = open(path2, O_RDONLY);
+    if (fd2 == -1) {
         error("open(%s): %s\n", path2, strerror(errno));
         set_exit_error();
         goto cls1;
@@ -123,14 +123,13 @@ filediff(void) {
 	}
 #else
 	while (1) {
-		l1 = read(fd1, buff1, BUFF_SIZ);
+        const ssize_t l1 = read(fd1, buff1, BUFF_SIZ);
 		if (l1 == -1) {
             error("read(%s): %s\n", path1, strerror(errno));
             set_exit_error();
 			break;
 		}
-
-		l2 = read(fd2, buff2, BUFF_SIZ);
+        const ssize_t l2 = read(fd2, buff2, BUFF_SIZ);
 		if (l2 == -1) {
             error("read(%s): %s\n", path2, strerror(errno));
             set_exit_error();
@@ -145,10 +144,11 @@ filediff(void) {
 		}
         total_byte_count += l1;
 
-		if (l1 < BUFF_SIZ)
-			break;
+        if (l1 < BUFF_SIZ) {
+            ++total_file_count; /* count successfully compared files only */
+            break;
+        }
 	}
-    ++total_file_count;
 #endif
 	if (close(fd2) == -1) {
         error("close(%s): %s\n", path2, strerror(errno));
@@ -166,20 +166,25 @@ cls1:
 
 int
 linkdiff(void) {
-	ssize_t l1, l2;
+    if (ign_cont) {
+        ++total_file_count; /* -C: Only count files */
+        return 0;
+    }
+    if (progress)
+        show_progress(path1, buff1);
 
-	if ((l1 = readlink(path1, buff1, sizeof(buff1) - 1)) == -1) {
+    const ssize_t l1 = readlink(path1, buff1, sizeof(buff1) - 1);
+    if (l1 == -1) {
         error("readlink(%s): %s\n", path1, strerror(errno));
         set_exit_error();
 		return -1;
 	}
-
-	if ((l2 = readlink(path2, buff2, sizeof(buff2) - 1)) == -1) {
+    const ssize_t l2 = readlink(path2, buff2, sizeof(buff2) - 1);
+    if (l2 == -1) {
         error("readlink(%s): %s\n", path2, strerror(errno));
         set_exit_error();
 		return -1;
 	}
-
 	buff1[l1] = 0;
 	buff2[l2] = 0;
 
