@@ -3,9 +3,9 @@
 #include <string.h>
 #include <time.h>
 #include "progress.h"
-#include "term_info.h"
-#include "summary.h"
-#include "main.h"
+#include "term_info.h" /* ti_clr_eol, ti_get_cols */
+#include "summary.h" /* total_file_count, ... */
+#include "main.h" /* ini_path1len */
 
 static const time_t period = 10;
 short progress;

@@ -43,6 +43,7 @@
 #include "term_info.h"
 #include "summary.h"
 #include "progress.h"
+#include "output.h"
 
 char *prog;
 char path1[PATH_SIZ];
@@ -219,6 +220,7 @@ next:
 #endif
     term_info_init();
     progress_init();
+    output_init(prog, quiet, clear_progress_line);
     typetest(NULL);
     if (summary) {
         clear_progress_line();
