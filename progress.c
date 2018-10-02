@@ -56,8 +56,11 @@ void show_progress(const char *const path, char *buf) {
     if (cols_left <= 0)
         return;
     cols_left -= print_time();
-    cols_left -= printf("%'ldF %'jdB ",
-                        total_file_count, (intmax_t)total_byte_count);
+    if (total_file_count) {
+        cols_left -= printf("%'ldF ", total_file_count);
+        if (total_byte_count)
+            cols_left -= printf("%'jdB ", (intmax_t)total_byte_count);
+    }
     if (cols_left <= 0)
         return;
     memcpy(buf, path + ini_path1len + 1, (size_t)cols_left);

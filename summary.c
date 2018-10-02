@@ -7,6 +7,8 @@ off_t total_byte_count;
 short summary;
 
 void output_summary(void) {
-    printf("%'ld files (%'jd bytes) compared\n",
-           total_file_count, (intmax_t)total_byte_count);
+    printf("%'ld files ", total_file_count);
+    if (total_byte_count)
+        printf("(%'jd bytes) ", (intmax_t)total_byte_count);
+    printf("compared\n");
 }
