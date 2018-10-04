@@ -316,7 +316,10 @@ typetest(int *st)
             set_exit_diff();
             return;
         }
+    } else if (S_ISSOCK(stat1.st_mode) || S_ISFIFO(stat1.st_mode)) {
+        return; /* compare not necessary */
     } else {
+        /* unreached */
         error("%s: Unsupported file type\n", path1);
         exit_code = EXIT_ERROR;
     }
