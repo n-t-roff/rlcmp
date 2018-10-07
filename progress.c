@@ -6,6 +6,8 @@
 #include "term_info.h" /* ti_clr_eol, ti_get_cols */
 #include "summary.h" /* total_file_count, ... */
 #include "main.h" /* ini_path1len */
+#include "unit_prefix.h"
+#include "format_time.h"
 
 static const time_t period = 10;
 short progress;
@@ -33,19 +35,7 @@ int print_time(void) {
         t0 = time(NULL);
         return 0;
     }
-    time_t dt = time(NULL) - t0;
-    int size = 0;
-    time_t t = dt / (60 * 60); /* hours */
-    if (t) {
-        size += printf("%ld:", t);
-        dt %= 60 * 60;
-    }
-    t = dt / 60; /* minutes */
-    size += printf("%02ld:", t);
-    if (t)
-        dt %= 60;
-    size += printf("%02ld ", dt);
-    return size;
+    return FormatTime.time_t_to_hour_min_sec(NULL, 0, NULL, time(NULL) - t0);
 }
 
 void show_progress(const char *const path, char *buf) {
@@ -57,9 +47,14 @@ void show_progress(const char *const path, char *buf) {
         return;
     cols_left -= print_time();
     if (total_file_count) {
-        cols_left -= printf("%'ldF ", total_file_count);
-        if (total_byte_count)
-            cols_left -= printf("%'jdB ", (intmax_t)total_byte_count);
+        cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL, total_file_count,
+                                            UnitPrefix.decimal);
+        printf(" files ");
+        if (total_byte_count) {
+            cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL,
+                                                total_byte_count, 0);
+            printf("B ");
+        }
     }
     if (cols_left <= 0)
         return;

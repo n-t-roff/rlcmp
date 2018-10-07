@@ -10,7 +10,9 @@ HEADERS = \
     term_info.h \
     summary.h \
     progress.h \
-    output.h
+    output.h \
+    unit_prefix.h \
+    format_time.h
 
 SOURCES = \
    bst.c \
@@ -20,7 +22,9 @@ SOURCES = \
     term_info.c \
     summary.c \
     progress.c \
-    output.c
+    output.c \
+    unit_prefix.c \
+    format_time.c
 
 DEFINES = \
     HAVE_LIBAVLBST \
