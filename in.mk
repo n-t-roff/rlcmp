@@ -13,7 +13,7 @@ MMAP = #-DMMAP_MEMCMP
 
 OBJ = \
 	main.o dir.o bst.o file.o term_info.o summary.o progress.o \
-	output.o
+	output.o unit_prefix.o format_time.o
 _CFLAGS = \
 	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__CLDBG) \
 	-I$(INCDIR) \
