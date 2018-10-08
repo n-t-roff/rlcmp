@@ -47,13 +47,14 @@ void show_progress(const char *const path, char *buf) {
         return;
     cols_left -= print_time();
     if (total_file_count) {
+        putchar(' ');
         cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL, total_file_count,
                                             UnitPrefix.decimal);
-        printf(" files ");
+        fputs(" files ", stdout);
         if (total_byte_count) {
             cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL,
                                                 total_byte_count, 0);
-            printf("B ");
+            fputs("B ", stdout);
         }
     }
     if (cols_left <= 0)

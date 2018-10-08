@@ -16,30 +16,40 @@ static int time_t_to_hour_min_sec(char *const buf,
 {
     if (!file_ptr)
         file_ptr = stdout;
-    int size = 0;
+    size_t size = 0;
+    int result = 0;
     time_t t = tot_sec / (60 * 60); /* hours */
     if (t) {
         if (buf)
-            size += snprintf(buf, bufsiz, "%ld:", t);
+            result = snprintf(buf+size, bufsiz-size, "%ld:", t);
         else
-            size += fprintf(file_ptr, "%ld:", t);
+            result = fprintf(file_ptr, "%ld:", t);
+        if (result < 0)
+            return result;
+        size += (size_t)result;
 
         tot_sec %= 60 * 60;
     }
     t = tot_sec / 60; /* minutes */
 
     if (buf)
-        size += snprintf(buf, bufsiz, "%02ld:", t);
+        result = snprintf(buf+size, bufsiz-size, "%02ld:", t);
     else
-        size += fprintf(file_ptr, "%02ld:", t);
+        result = fprintf(file_ptr, "%02ld:", t);
+    if (result < 0)
+        return result;
+    size += (size_t)result;
 
     if (t)
         tot_sec %= 60;
 
     if (buf)
-        size += snprintf(buf, bufsiz, "%02ld ", tot_sec);
+        result = snprintf(buf+size, bufsiz-size, "%02ld", tot_sec);
     else
-        size += fprintf(file_ptr, "%02ld ", tot_sec);
+        result = fprintf(file_ptr, "%02ld", tot_sec);
+    if (result < 0)
+        return result;
+    size += (size_t)result;
 
-    return size;
+    return (int)size;
 }
