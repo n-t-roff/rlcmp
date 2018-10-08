@@ -13,7 +13,7 @@ static const time_t period = 10;
 short progress;
 
 void progress_init(void) {
-    print_time(); /* set t0 */
+    print_elapsed_time(); /* set t0 */
 }
 
 inline static int time_elapsed(void) {
@@ -29,7 +29,7 @@ inline static int time_elapsed(void) {
     return 0;
 }
 
-int print_time(void) {
+int print_elapsed_time(void) {
     static time_t t0;
     if (!t0) {
         t0 = time(NULL);
@@ -45,7 +45,7 @@ void show_progress(const char *const path, char *buf) {
     int cols_left = ti_get_cols();
     if (cols_left <= 0)
         return;
-    cols_left -= print_time();
+    cols_left -= print_elapsed_time();
     if (total_file_count) {
         putchar(' ');
         cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL, total_file_count,

@@ -224,7 +224,8 @@ next:
     typetest(NULL);
     if (summary) {
         clear_progress_line();
-        print_time();
+        print_elapsed_time();
+        putchar(' ');
         output_summary();
     }
     return exit_code;
