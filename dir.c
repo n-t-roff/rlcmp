@@ -480,7 +480,7 @@ procfile(char *s, int *st)
 #endif
     switch (*st) {
     case FILE_NOENT1:
-        if (ignore_missing)
+        if (ignore_missing & 1)
             return;
         if (report_unexpect)
             output("Only in %s: %s\n", path2, s);
@@ -489,7 +489,7 @@ procfile(char *s, int *st)
         set_exit_diff();
         return;
     case FILE_NOENT2:
-        if (ignore_missing)
+        if (ignore_missing & 2)
             return;
         if (report_unexpect)
             output("Only in %s: %s\n", path1, s);

@@ -5,7 +5,7 @@
 .Nd recursive file compare
 .Sh SYNOPSIS
 .Nm
-.Op Fl OPTIONS
+.Op OPTIONS
 .Op Fl d Ar depth
 .Op Fl Fl
 .Ar file1
@@ -26,7 +26,7 @@ stops a file compare when the first difference is found.
 It acts on files like a very simple version of
 .Xr cmp 1 .
 .Sh OPTIONS
-.Bl -tag -width ".It Fl m"
+.Bl -tag -width ".It Fl d Ar depth"
 .It Fl Fl
 Treat following arguments as filenames even if they begin with
 .Sq Fl .
@@ -59,9 +59,21 @@ Compare file group.
 When comparing the modification time with
 .Fl t
 ignore modification time of symbolic links.
-.It Fl M
+.It Fl M Ar n
 Ignore files which are in one directory tree only
 (treat them as equal).
+Argument
+.Ar n
+can be:
+.Pp
+. Bl -tag -width 1n -compact
+. It 0
+Ignore missing files in both directory trees.
+. It 1
+Ignore missing files in first tree.
+. It 2
+Ignore missing files in second tree.
+. El
 .It Fl m
 Compare file permissions (except for symbolic links).
 .It Fl o

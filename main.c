@@ -76,15 +76,16 @@ main(int argc, char **argv) {
 	static char *s;
 	static int c;
     setlocale(LC_ALL, "");
-	prog = *argv++;
-	argc--;
-	while (!noopts && argc && *(s = *argv) == '-') {
-		while ((c = *(++s))) {
-			static char *arg;
+    prog = *argv++;
+    --argc;
+    while (!noopts && argc && *(s = *argv) == '-') {
+        ++argv;
+        --argc;
+        while ((c = *++s)) {
 			switch (c) {
 			case '-':
 				noopts = 1;
-				goto next;
+                break;
 			case 'A':
 				ign_dir_perm = 1;
 				ign_link_time = 1;
@@ -103,16 +104,16 @@ main(int argc, char **argv) {
                 break;
             case 'd':
 				cmp_depth = 1;
-				arg = ++s;
-				if (!(c = *arg) && --argc) {
-					arg = *(++argv);
-					c = *arg;
+                if (!(c = *++s) && argc) {
+                    s = *argv++;
+                    --argc;
+                    c = *s;
 				}
 				if (c < '0' || c > '9')
 					usage("Option -d needs a "
 					    "number as argument");
-				depth = atoi(arg);
-				goto next;
+                depth = atoi(s);
+                goto next;
             case 'e':
                 exit_on_error = 1;
                 break;
@@ -123,8 +124,21 @@ main(int argc, char **argv) {
 				ign_link_time = 1;
 				break;
             case 'M':
-                ignore_missing = 1;
-                break;
+                if (!(c = *++s) && argc) {
+                    s = *argv++;
+                    --argc;
+                    c = *s;
+                }
+                if (s[1])
+                    c = 0; /* Illegal argument */
+                switch (c) {
+                case '0': ignore_missing = ~0; break;
+                case '1': ignore_missing =  1; break;
+                case '2': ignore_missing =  2; break;
+                default:
+                    usage("Argument for option -M must be 0, 1, or 2");
+                }
+                goto next;
 			case 'm':
 				cmp_perm = 1;
 				break;
@@ -170,8 +184,7 @@ main(int argc, char **argv) {
 			}
 		}
 next:
-		argv++;
-		argc--;
+        ;
 	}
 	if (argc != 2)
 		usage("Wrong number of arguments");
