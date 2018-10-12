@@ -66,6 +66,7 @@ int ign_link_time;
 short ign_cont;
 short quiet;
 short exit_on_error;
+short ignore_missing;
 
 static void usage(const char *) __attribute__ ((noreturn));
 
@@ -121,6 +122,9 @@ main(int argc, char **argv) {
 			case 'L':
 				ign_link_time = 1;
 				break;
+            case 'M':
+                ignore_missing = 1;
+                break;
 			case 'm':
 				cmp_perm = 1;
 				break;

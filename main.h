@@ -33,5 +33,6 @@ extern int ign_link_time;
 extern short ign_cont;
 extern short quiet;
 extern short exit_on_error;
+extern short ignore_missing;
 
 #endif

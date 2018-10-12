@@ -1,4 +1,4 @@
-.Dd October 7, 2018
+.Dd October 11, 2018
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
@@ -59,6 +59,9 @@ Compare file group.
 When comparing the modification time with
 .Fl t
 ignore modification time of symbolic links.
+.It Fl M
+Ignore files which are in one directory tree only
+(treat them as equal).
 .It Fl m
 Compare file permissions (except for symbolic links).
 .It Fl o
