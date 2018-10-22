@@ -44,6 +44,7 @@
 #include "summary.h"
 #include "progress.h"
 #include "output.h"
+#include "trace_log.h"
 
 char *prog;
 char path1[PATH_SIZ];
@@ -76,6 +77,7 @@ main(int argc, char **argv) {
 	static char *s;
 	static int c;
     setlocale(LC_ALL, "");
+    trace_open();
     prog = *argv++;
     --argc;
     while (!noopts && argc && *(s = *argv) == '-') {

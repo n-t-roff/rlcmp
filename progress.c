@@ -50,11 +50,11 @@ void show_progress(const char *const path, char *buf) {
         --cols_left; putchar(' ');
         cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL, total_file_count,
                                             UnitPrefix.decimal);
-        cols_left -= fputs(" files ", stdout);
+        cols_left -= printf(" files ");
         if (total_byte_count) {
             cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL,
                                                 total_byte_count, 0);
-            cols_left -= fputs("B ", stdout);
+            cols_left -= printf("B ");
         }
     }
     if (cols_left <= 0)

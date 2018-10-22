@@ -12,7 +12,8 @@ HEADERS = \
     progress.h \
     output.h \
     unit_prefix.h \
-    format_time.h
+    format_time.h \
+    trace_log.h
 
 SOURCES = \
    bst.c \
@@ -24,8 +25,10 @@ SOURCES = \
     progress.c \
     output.c \
     unit_prefix.c \
-    format_time.c
+    format_time.c \
+    trace_log.c
 
 DEFINES = \
     HAVE_LIBAVLBST \
-    USE_SYS_SYSMACROS_H
+    USE_SYS_SYSMACROS_H \
+    TRACE_LOG=\'\"\"\'

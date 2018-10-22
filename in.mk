@@ -5,6 +5,7 @@ MANDIR = $(PREFIX)/share/man
 INCDIR = $(PREFIX)/include
 LIBDIR = $(PREFIX)/lib
 
+#TRACE_LOG = -DTRACE_LOG='"/tmp/.$(BIN)_trace_"'
 STRP = -s
 # Remove comment to enable mmap(2) + memcmp(3).  Else read(2) + memcmp(3) is
 # used.  While it had been stated that mmap is faster than read, benchmarks
@@ -13,11 +14,12 @@ MMAP = #-DMMAP_MEMCMP
 
 OBJ = \
 	main.o dir.o bst.o file.o term_info.o summary.o progress.o \
-	output.o unit_prefix.o format_time.o
+	output.o unit_prefix.o format_time.o trace_log.o
 _CFLAGS = \
 	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__CLDBG) \
 	-I$(INCDIR) \
 	$(INCDIR_CURSES) \
+	$(TRACE_LOG) \
 	$(MMAP)
 _LDFLAGS = \
 	$(LDFLAGS) $(__CLDBG) $(STRP) \
