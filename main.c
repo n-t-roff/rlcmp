@@ -120,6 +120,7 @@ main(int argc, char **argv) {
                 goto next;
             case 'E':
                 msg_fp = stderr;
+                break;
             case 'e':
                 exit_on_error = 1;
                 break;

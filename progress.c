@@ -35,7 +35,7 @@ int print_elapsed_time(void) {
         t0 = time(NULL);
         return 0;
     }
-    return FormatTime.time_t_to_hour_min_sec(NULL, 0, msg_fp, time(NULL) - t0);
+    return FormatTime.time_t_to_hour_min_sec(NULL, 0, NULL, time(NULL) - t0);
 }
 
 void show_progress(const char *const path, char *buf) {
@@ -48,21 +48,21 @@ void show_progress(const char *const path, char *buf) {
     cols_left -= print_elapsed_time();
     if (total_file_count) {
         --cols_left; putchar(' ');
-        cols_left -= UnitPrefix.unit_prefix(NULL, 0, msg_fp, total_file_count,
+        cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL, total_file_count,
                                             UnitPrefix.decimal);
-        cols_left -= fprintf(msg_fp, " files ");
+        cols_left -= printf(" files ");
         if (total_byte_count) {
-            cols_left -= UnitPrefix.unit_prefix(NULL, 0, msg_fp,
+            cols_left -= UnitPrefix.unit_prefix(NULL, 0, NULL,
                                                 total_byte_count, 0);
-            cols_left -= fprintf(msg_fp, "B ");
+            cols_left -= printf("B ");
         }
     }
     if (cols_left <= 0)
         return;
     memcpy(buf, path + ini_path1len + 1, (size_t)cols_left);
     buf[cols_left] = 0;
-    fprintf(msg_fp, "%s\r", buf);
-    fflush(msg_fp);
+    printf("%s\r", buf);
+    fflush(stdout);
 }
 
 void clear_progress_line(void) {
