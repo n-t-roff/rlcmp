@@ -30,6 +30,7 @@ extern int depth;
 extern int report_unexpect;
 extern int ign_dir_perm;
 extern int ign_link_time;
+extern FILE *msg_fp;
 extern short ign_cont;
 extern short quiet;
 extern short exit_on_error;

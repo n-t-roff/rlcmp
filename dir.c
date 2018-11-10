@@ -257,9 +257,9 @@ typetest(int *st)
         if (!quiet) {
             output("Different file types for %s (", path1);
             print_type(stat1.st_mode, 0);
-            printf(") and %s (", path2);
+            fprintf(msg_fp, ") and %s (", path2);
             print_type(stat2.st_mode, 0);
-            printf(")\n");
+            fprintf(msg_fp, ")\n");
         }
 
         if (st)
@@ -288,7 +288,7 @@ typetest(int *st)
         if (!quiet) {
             output("Different sizes for ");
             print_type(stat1.st_mode, 1);
-            printf("s %s (%ju) and %s (%ju)\n", path1,
+            fprintf(msg_fp, "s %s (%ju) and %s (%ju)\n", path1,
                    (uintmax_t)stat1.st_size, path2,
                    (uintmax_t)stat2.st_size);
         }
@@ -342,11 +342,11 @@ time_cmp(void) {
         if (!quiet) {
             output("Different modification time for ");
             print_type(stat1.st_mode, 1);
-            printf("s %s (", path1);
+            fprintf(msg_fp, "s %s (", path1);
             print_time(stat1.st_mtime);
-            printf(") and %s (", path2);
+            fprintf(msg_fp, ") and %s (", path2);
             print_time(stat2.st_mtime);
-            printf(")\n");
+            fprintf(msg_fp, ")\n");
         }
         set_exit_diff();
     }
@@ -361,7 +361,7 @@ perm_cmp(void) {
         if (!quiet) {
             output("Different permissions for ");
             print_type(stat1.st_mode, 1);
-            printf("s %s (%04o) and %s (%04o)\n",
+            fprintf(msg_fp, "s %s (%04o) and %s (%04o)\n",
                    path1, (unsigned)stat1.st_mode & 07777,
                    path2, (unsigned)stat2.st_mode & 07777);
         }
@@ -375,11 +375,11 @@ usr_cmp(void) {
         if (!quiet) {
             output("Different file owner for ");
             print_type(stat1.st_mode, 1);
-            printf("s %s (", path1);
+            fprintf(msg_fp, "s %s (", path1);
             print_uid(stat1.st_uid);
-            printf(") and %s (", path2);
+            fprintf(msg_fp, ") and %s (", path2);
             print_uid(stat2.st_uid);
-            printf(")\n");
+            fprintf(msg_fp, ")\n");
         }
         set_exit_diff();
     }
@@ -391,11 +391,11 @@ grp_cmp(void) {
         if (!quiet) {
             output("Different group ID for ");
             print_type(stat1.st_mode, 1);
-            printf("s %s (", path1);
+            fprintf(msg_fp, "s %s (", path1);
             print_gid(stat1.st_gid);
-            printf(") and %s (", path2);
+            fprintf(msg_fp, ") and %s (", path2);
             print_gid(stat2.st_gid);
-            printf(")\n");
+            fprintf(msg_fp, ")\n");
         }
         set_exit_diff();
     }
@@ -404,21 +404,21 @@ grp_cmp(void) {
 static void
 print_type(mode_t m, int n) {
 	if      (S_ISREG(m))
-		fputs("regular file", stdout);
+        fputs("regular file", msg_fp);
 	else if (S_ISDIR(m))
-		printf("director%s", n ? "ie" : "y");
+        fprintf(msg_fp, "director%s", n ? "ie" : "y");
 	else if (S_ISLNK(m))
-		fputs("symbolic link", stdout);
+        fputs("symbolic link", msg_fp);
 	else if (S_ISCHR(m))
-		fputs("character device", stdout);
+        fputs("character device", msg_fp);
 	else if (S_ISBLK(m))
-		fputs("block device", stdout);
+        fputs("block device", msg_fp);
 	else if (S_ISFIFO(m))
-		fputs("FIFO", stdout);
+        fputs("FIFO", msg_fp);
 	else if (S_ISSOCK(m))
-		fputs("socket", stdout);
+        fputs("socket", msg_fp);
 	else
-		fputs("unknown", stdout);
+        fputs("unknown", msg_fp);
 }
 
 static void
@@ -426,27 +426,27 @@ print_time(time_t t) {
 	struct tm *tm;
 	tm = localtime(&t);
 	if (time(NULL) - t > 18 * 3600)
-		printf("%d-%02d-%02d ", tm->tm_year + 1900,
+        fprintf(msg_fp, "%d-%02d-%02d ", tm->tm_year + 1900,
 		    tm->tm_mon + 1, tm->tm_mday);
-	printf("%d:%02d", tm->tm_hour, tm->tm_min);
+    fprintf(msg_fp, "%d:%02d", tm->tm_hour, tm->tm_min);
 }
 
 static void
 print_uid(uid_t u) {
 	struct passwd *p;
 	if ((p = getpwuid(u)))
-		fputs(p->pw_name, stdout);
+        fputs(p->pw_name, msg_fp);
 	else
-		printf("%d", u);
+        fprintf(msg_fp, "%d", u);
 }
 
 static void
 print_gid(gid_t g) {
 	struct group *p;
 	if ((p = getgrgid(g)))
-		fputs(p->gr_name, stdout);
+        fputs(p->gr_name, msg_fp);
 	else
-		printf("%d", g);
+        fprintf(msg_fp, "%d", g);
 }
 
 #ifdef HAVE_LIBAVLBST

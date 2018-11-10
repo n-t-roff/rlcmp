@@ -64,6 +64,7 @@ int depth;
 int report_unexpect;
 int ign_dir_perm;
 int ign_link_time;
+FILE *msg_fp;
 short ign_cont;
 short quiet;
 short exit_on_error;
@@ -77,6 +78,7 @@ main(int argc, char **argv) {
 	static char *s;
 	static int c;
     setlocale(LC_ALL, "");
+    msg_fp = stdout;
     trace_open();
     prog = *argv++;
     --argc;
@@ -116,6 +118,8 @@ main(int argc, char **argv) {
 					    "number as argument");
                 depth = atoi(s);
                 goto next;
+            case 'E':
+                msg_fp = stderr;
             case 'e':
                 exit_on_error = 1;
                 break;
