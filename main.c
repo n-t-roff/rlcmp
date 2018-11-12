@@ -244,7 +244,7 @@ next:
 #endif
     term_info_init();
     progress_init();
-    output_init(prog, quiet, clear_progress_line);
+    output_init(prog, quiet, clear_progress_line, msg_fp);
     typetest(NULL);
     if (summary) {
         clear_progress_line();

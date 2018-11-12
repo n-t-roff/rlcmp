@@ -1,18 +1,18 @@
-#include <stdio.h>
 #include <stdarg.h>
 #include "output.h"
-#include "main.h"
 
 static void (*pre_cmd_)(void);
 static const char *prog_name_;
+static FILE *file_ptr_;
 static bool quiet_;
 
-void output_init(const char *const prog_name, const bool q,
-                 void (*pre_cmd)(void))
+void output_init(const char *const prog, const bool quiet,
+                 void (*const pre_cmd)(void), FILE *const file_ptr)
 {
-    prog_name_ = prog_name;
-    quiet_ = q;
+    prog_name_ = prog;
+    quiet_ = quiet;
     pre_cmd_ = pre_cmd;
+    file_ptr_ = file_ptr ? file_ptr : stdout;
 }
 
 int output(const char *const fmt, ...) {
@@ -21,7 +21,7 @@ int output(const char *const fmt, ...) {
     pre_cmd_();
     va_list ap;
     va_start(ap, fmt);
-    int size = vfprintf(msg_fp, fmt, ap);
+    int size = vfprintf(file_ptr_, fmt, ap);
     va_end(ap);
     return size;
 }
