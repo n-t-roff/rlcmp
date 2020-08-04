@@ -3,8 +3,13 @@
 
 #include <limits.h>
 #include <sys/types.h>
+#include <stdio.h>
 
-#define PATH_SIZ (PATH_MAX > 1024*16 ? PATH_MAX : 1024*16) /* for realpath() */
+#ifdef PATH_MAX
+# define PATH_SIZ (PATH_MAX > 1024 * 32 ? PATH_MAX : 1024 * 32) /* for realpath() */
+#else
+# define PATH_SIZ (1024 * 32) /* for realpath() */
+#endif
 #define BUFF_SIZ PATH_SIZ
 
 #define EXIT_DIFF  1

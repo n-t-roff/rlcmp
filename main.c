@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -33,8 +32,6 @@
 #ifdef HAVE_LIBAVLBST
 # include <avlbst.h>
 #endif
-#include <limits.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <locale.h>
 #include "ver.h"
@@ -69,6 +66,7 @@ short ign_cont;
 short quiet;
 short exit_on_error;
 short ignore_missing;
+short follow_cli_symlinks;
 
 static void usage(const char *) __attribute__ ((noreturn));
 
@@ -127,6 +125,9 @@ main(int argc, char **argv) {
 			case 'g':
 				cmp_grp  = 1;
 				break;
+            case 'H':
+                follow_cli_symlinks = 1;
+                break;
 			case 'L':
 				ign_link_time = 1;
 				break;
@@ -198,38 +199,60 @@ next:
 
 	args = argv;
 
-	if (!realpath(*argv, path1)) {
-		fprintf(stderr, "%s: realpath \"%s\" failed: %s\n",
-		    prog, *argv, strerror(errno));
-		exit(EXIT_ERROR);
-	}
+    if (lstat(*argv, &stat1) == -1)
+    {
+        fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog, *argv, strerror(errno));
+        exit(EXIT_ERROR);
+    }
+    if (!follow_cli_symlinks && S_ISLNK(stat1.st_mode))
+    {
+        strncpy(path1, *argv, PATH_SIZ - 1);
+        path1[PATH_SIZ - 1] = 0;
+    }
+    else if (!realpath(*argv, path1))
+    {
+        fprintf(stderr, "%s: realpath \"%s\" failed: %s\n", prog, *argv, strerror(errno));
+        exit(EXIT_ERROR);
+    }
 
     ini_path1len = path1len = strlen(path1);
 	argv++;
 
-	if (!realpath(*argv, path2)) {
-		fprintf(stderr, "%s: realpath \"%s\" failed: %s\n",
-		    prog, *argv, strerror(errno));
+    if (lstat(*argv, &stat2) == -1) {
+        fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog, *argv, strerror(errno));
+        exit(EXIT_ERROR);
+    }
+    if (!follow_cli_symlinks && S_ISLNK(stat2.st_mode))
+    {
+        strncpy(path2, *argv, PATH_SIZ - 1);
+        path2[PATH_SIZ - 1] = 0;
+    }
+    else if (!realpath(*argv, path2))
+    {
+        fprintf(stderr, "%s: realpath \"%s\" failed: %s\n", prog, *argv, strerror(errno));
 		exit(EXIT_ERROR);
 	}
 
     path2len = strlen(path2);
 
-	if (stat(path1, &stat1) == -1) {
-		fprintf(stderr, "%s: stat \"%s\" failed: %s\n", prog, path1,
-		    strerror(errno));
-		exit(EXIT_ERROR);
-	}
+    if (follow_cli_symlinks)
+    {
+        if (stat(path1, &stat1) == -1)
+        {
+            fprintf(stderr, "%s: stat \"%s\" failed: %s\n", prog, path1, strerror(errno));
+            exit(EXIT_ERROR);
+        }
+        if (stat(path2, &stat2) == -1)
+        {
+            fprintf(stderr, "%s: stat \"%s\" failed: %s\n", prog, path2, strerror(errno));
+            exit(EXIT_ERROR);
+        }
+    }
 
-	if (stat(path2, &stat2) == -1) {
-		fprintf(stderr, "%s: stat \"%s\" failed: %s\n", prog, path2,
-		    strerror(errno));
-		exit(EXIT_ERROR);
-	}
-
-	if (stat1.st_ino == stat2.st_ino &&
-	    stat1.st_dev == stat2.st_dev)
-		return 0;
+    if (stat1.st_ino == stat2.st_ino && stat1.st_dev == stat2.st_dev)
+    {
+        return 0;
+    }
 
 #ifdef MMAP_MEMCMP
 	errno = 0;

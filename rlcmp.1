@@ -25,24 +25,38 @@ follows symbolic links.
 stops a file compare when the first difference is found.
 It acts on files like a very simple version of
 .Xr cmp 1 .
+.
 .Sh OPTIONS
+.
 .Bl -tag -width ".It Fl d Ar depth"
+.
 .It Fl Fl
+.
 Treat following arguments as filenames even if they begin with
 .Sq Fl .
+.
 .It Fl A
+.
 Same as option
 .Fl aDL .
+.
 .It Fl a
+.
 Same as option
 .Fl gmtu .
+.
 .It Fl C
+.
 Don't compare file contents.
+.
 .It Fl D
+.
 When comparing file permissions with
 .Fl m
 ignore permissions of directories.
+.
 .It Fl d Ar depth
+.
 Limit recursion
 .Ar depth .
 A
@@ -51,17 +65,31 @@ of
 .Li 0
 means that directories are only entered when they are given as a command
 line argument.
+.
 .It Fl E
+.
 Write non-error messages to stderr instead of stdout.
+.
 .It Fl e
+.
 Exit on first error or difference found.
+.
 .It Fl g
+.
 Compare file group.
+.
+.It Fl H
+.
+Follow symbolic links listed on the command line.
+.
 .It Fl L
+.
 When comparing the modification time with
 .Fl t
 ignore modification time of symbolic links.
+.
 .It Fl M Ar n
+.
 Ignore files which are in one directory tree only
 (treat them as equal).
 Argument
@@ -76,9 +104,13 @@ Ignore missing files in first tree.
 . It 2
 Ignore missing files in second tree.
 . El
+.
 .It Fl m
+.
 Compare file permissions (except for symbolic links).
+.
 .It Fl o
+.
 Report files which
 .Em are
 only in one directory tree (default of
@@ -86,22 +118,35 @@ only in one directory tree (default of
 instead of reporting files which are
 .Em not
 found.
+.
 .It Fl p
+.
 Output progress information:
 Every ten seconds print the elapsed wall time,
 the number of processed files and bytes,
 and the currently compared file.
+.
 .It Fl q
+.
 Quiet operation, only set exit status.
+.
 .It Fl s
+.
 Output summary:
 Print elapsed wall time, number of files and bytes processed.
+.
 .It Fl t
+.
 Compare modification time (except for directories).
+.
 .It Fl u
+.
 Compare file owner.
+.
 .It Fl V
+.
 Print version and exit.
+.
 .El
 .Sh EXIT STATUS
 .Nm
