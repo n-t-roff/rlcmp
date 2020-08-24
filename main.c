@@ -67,6 +67,7 @@ short quiet;
 short exit_on_error;
 short ignore_missing;
 short follow_cli_symlinks;
+char wait_flag;
 
 static void usage(const char *) __attribute__ ((noreturn));
 
@@ -185,6 +186,9 @@ main(int argc, char **argv) {
 #endif
 				    "\n", prog);
 				exit(0);
+            case 'W':
+                wait_flag = 1;
+                break;
 			default:
 				fprintf(stderr, "%s: Unknown option '%c'\n",
 				    prog, c);

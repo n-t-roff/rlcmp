@@ -40,5 +40,6 @@ extern short ign_cont;
 extern short quiet;
 extern short exit_on_error;
 extern short ignore_missing;
+extern char wait_flag;
 
 #endif

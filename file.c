@@ -38,6 +38,7 @@
 # include <avlbst.h>
 #endif
 #include <limits.h>
+#include <time.h>
 #include "main.h"
 #include "dir.h"
 #include "file.h"
@@ -50,13 +51,18 @@ static char buff2[BUFF_SIZ];
 
 /* Returns -1 on error, 1 for difference and 0 else. */
 
-int
-filediff(void) {
-	int diff = 0;
+int filediff(void)
+{
+    time_t start_time;
+    if (wait_flag)
+    {
+        start_time = time(NULL);
+    }
+    int diff = 0;
 #ifdef MMAP_MEMCMP
-	off_t offs, left;
-	size_t len;
-	char *buf1, *buf2;
+    off_t offs, left;
+    size_t len;
+    char *buf1, *buf2;
 #endif
     if (ign_cont) {
         ++total_file_count; /* -C: Only count files */
@@ -78,88 +84,96 @@ filediff(void) {
         goto cls1;
     }
 #ifdef MMAP_MEMCMP
-	offs = 0;
-	left = stat1.st_size;
-	while (left) {
-		len = left < (off_t)pagesiz ? (size_t)left : (size_t)pagesiz;
-		if ((buf1 = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd1, offs))
-		    == MAP_FAILED) {
-			fprintf(stderr, "%s: mmap \"%s\" failed: %s\n", prog,
-			    path1, strerror(errno));
-			exit(EXIT_ERROR);
-		}
-		if ((buf2 = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd2, offs))
-		    == MAP_FAILED) {
-			fprintf(stderr, "%s: mmap \"%s\" failed: %s\n", prog,
-			    path2, strerror(errno));
-			exit(EXIT_ERROR);
-		}
-		if (memcmp(buf1, buf2, len)) {
-			printf("Different files %s and %s\n", path1, path2);
-			SET_EXIT_DIFF();
-			diff = 1;
-			left = (off_t)len;
-		}
-		if (msync(buf1, len, MS_INVALIDATE) == -1) {
-			fprintf(stderr, "%s: msync \"%s\" failed: %s\n", prog,
-			    path1, strerror(errno));
-		}
-		if (msync(buf2, len, MS_INVALIDATE) == -1) {
-			fprintf(stderr, "%s: msync \"%s\" failed: %s\n", prog,
-			    path2, strerror(errno));
-		}
-		if (munmap(buf2, len) == -1) {
-			fprintf(stderr, "%s: munmap \"%s\" failed: %s\n",
-			    prog, path2, strerror(errno));
-			exit(EXIT_ERROR);
-		}
-		if (munmap(buf1, len) == -1) {
-			fprintf(stderr, "%s: munmap \"%s\" failed: %s\n",
-			    prog, path1, strerror(errno));
-			exit(EXIT_ERROR);
-		}
-		offs += len;
-		left -= len;
-	}
+    offs = 0;
+    left = stat1.st_size;
+    while (left) {
+        len = left < (off_t)pagesiz ? (size_t)left : (size_t)pagesiz;
+        if ((buf1 = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd1, offs))
+                == MAP_FAILED) {
+            fprintf(stderr, "%s: mmap \"%s\" failed: %s\n", prog,
+                    path1, strerror(errno));
+            exit(EXIT_ERROR);
+        }
+        if ((buf2 = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd2, offs))
+                == MAP_FAILED) {
+            fprintf(stderr, "%s: mmap \"%s\" failed: %s\n", prog,
+                    path2, strerror(errno));
+            exit(EXIT_ERROR);
+        }
+        if (memcmp(buf1, buf2, len)) {
+            printf("Different files %s and %s\n", path1, path2);
+            SET_EXIT_DIFF();
+            diff = 1;
+            left = (off_t)len;
+        }
+        if (msync(buf1, len, MS_INVALIDATE) == -1) {
+            fprintf(stderr, "%s: msync \"%s\" failed: %s\n", prog,
+                    path1, strerror(errno));
+        }
+        if (msync(buf2, len, MS_INVALIDATE) == -1) {
+            fprintf(stderr, "%s: msync \"%s\" failed: %s\n", prog,
+                    path2, strerror(errno));
+        }
+        if (munmap(buf2, len) == -1) {
+            fprintf(stderr, "%s: munmap \"%s\" failed: %s\n",
+                    prog, path2, strerror(errno));
+            exit(EXIT_ERROR);
+        }
+        if (munmap(buf1, len) == -1) {
+            fprintf(stderr, "%s: munmap \"%s\" failed: %s\n",
+                    prog, path1, strerror(errno));
+            exit(EXIT_ERROR);
+        }
+        offs += len;
+        left -= len;
+    }
 #else
-	while (1) {
+    while (1) {
         const ssize_t l1 = read(fd1, buff1, BUFF_SIZ);
-		if (l1 == -1) {
+        if (l1 == -1) {
             error("read(%s): %s\n", path1, strerror(errno));
             set_exit_error();
-			break;
-		}
+            break;
+        }
         const ssize_t l2 = read(fd2, buff2, BUFF_SIZ);
-		if (l2 == -1) {
+        if (l2 == -1) {
             error("read(%s): %s\n", path2, strerror(errno));
             set_exit_error();
-			break;
-		}
-		if (l1 != l2 ||
-            memcmp(buff1, buff2, (size_t)l1)) {
+            break;
+        }
+        if (l1 != l2 ||
+                memcmp(buff1, buff2, (size_t)l1)) {
             output("Different files %s and %s\n", path1, path2);
             set_exit_diff();
-			diff = 1;
-			break;
-		}
+            diff = 1;
+            break;
+        }
         total_byte_count += l1;
 
         if (l1 < BUFF_SIZ) {
             ++total_file_count; /* count successfully compared files only */
             break;
         }
-	}
+    }
 #endif
-	if (close(fd2) == -1) {
+    if (close(fd2) == -1) {
         error("close(%s): %s\n", path2, strerror(errno));
-		exit(EXIT_ERROR);
-	}
+        exit(EXIT_ERROR);
+    }
 cls1:
-	if (close(fd1) == -1) {
+    if (close(fd1) == -1) {
         error("close(%s): %s\n", path1, strerror(errno));
-		exit(EXIT_ERROR);
-	}
-	return diff;
+        exit(EXIT_ERROR);
+    }
+    if (wait_flag)
+    {
+        time_t duration = time(NULL) - start_time;
+        if (duration)
+        {
+            sleep(duration);
+        }
+    }
+    return diff;
 }
 
 /* Returns -1 on error, 1 for difference and 0 else. */
@@ -177,25 +191,25 @@ linkdiff(void) {
     if (l1 == -1) {
         error("readlink(%s): %s\n", path1, strerror(errno));
         set_exit_error();
-		return -1;
-	}
+        return -1;
+    }
     const ssize_t l2 = readlink(path2, buff2, sizeof(buff2) - 1);
     if (l2 == -1) {
         error("readlink(%s): %s\n", path2, strerror(errno));
         set_exit_error();
-		return -1;
-	}
-	buff1[l1] = 0;
-	buff2[l2] = 0;
+        return -1;
+    }
+    buff1[l1] = 0;
+    buff2[l2] = 0;
 
-	if (l1 != l2 ||
-        memcmp(buff1, buff2, (size_t)l1)) {
+    if (l1 != l2 ||
+            memcmp(buff1, buff2, (size_t)l1)) {
         output("Different links %s -> %s and %s -> %s\n",
-		    path1, buff1, path2, buff2);
+               path1, buff1, path2, buff2);
         set_exit_diff();
-		return 1;
-	}
+        return 1;
+    }
     total_byte_count += l1;
     ++total_file_count;
-	return 0;
+    return 0;
 }
