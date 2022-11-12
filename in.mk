@@ -1,16 +1,13 @@
 BIN = rlcmp
+MAN = rlcmp
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 MANDIR = $(PREFIX)/share/man
 INCDIR = $(PREFIX)/include
 LIBDIR = $(PREFIX)/lib
 
-#TRACE_LOG = -DTRACE_LOG='"/tmp/.$(BIN)_trace_"'
+TRACE_LOG = #-DTRACE_LOG='"/tmp/.$(BIN)_trace_"'
 STRP = -s
-# Remove comment to enable mmap(2) + memcmp(3).  Else read(2) + memcmp(3) is
-# used.  While it had been stated that mmap is faster than read, benchmarks
-# on modern systems show that read(2) ist faster.
-MMAP = #-DMMAP_MEMCMP
 
 OBJ = \
 	main.o dir.o bst.o file.o term_info.o summary.o progress.o \
@@ -19,8 +16,7 @@ _CFLAGS = \
 	$(CFLAGS) $(CPPFLAGS) $(DEFINES) $(__CDBG) $(__CLDBG) \
 	-I$(INCDIR) \
 	$(INCDIR_CURSES) \
-	$(TRACE_LOG) \
-	$(MMAP)
+	$(TRACE_LOG) #-DDEBUG_DELAY
 _LDFLAGS = \
 	$(LDFLAGS) $(__CLDBG) $(STRP) \
 	-L${LIBDIR} -Wl,-rpath,${LIBDIR} \
@@ -31,11 +27,11 @@ all: $(BIN)
 
 install: $(BINDIR) $(MANDIR)/man1
 	install $(BIN) $(BINDIR)/
-	install -m 644 $(BIN).1 $(MANDIR)/man1/
+	install -m 644 $(MAN).1 $(MANDIR)/man1/
 
 uninstall:
 	rm -f $(BINDIR)/$(BIN)
-	rm -f $(MANDIR)/man1/$(BIN).1
+	rm -f $(MANDIR)/man1/$(MAN).1
 
 clean:
 	rm -f $(BIN) $(OBJ) *.gc??

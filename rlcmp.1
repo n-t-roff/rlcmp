@@ -1,4 +1,4 @@
-.Dd October 11, 2018
+.Dd November 11, 2022
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
@@ -130,6 +130,16 @@ and the currently compared file.
 .
 Quiet operation, only set exit status.
 .
+.It Fl R
+Use
+.Xr mmap 2
++
+.Xr memcmp 3
+instead of
+.Xr read 2
++
+.Xr memcmp 3 .
+.
 .It Fl s
 .
 Output summary:
@@ -146,6 +156,9 @@ Compare file owner.
 .It Fl V
 .
 Print version and exit.
+.
+.It Fl v
+Be verbose.
 .
 .It Fl W
 .

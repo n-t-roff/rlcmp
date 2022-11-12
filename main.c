@@ -68,14 +68,16 @@ short exit_on_error;
 short ignore_missing;
 short follow_cli_symlinks;
 char wait_flag;
+char use_mmap;
+char verbose;
 
 static void usage(const char *) __attribute__ ((noreturn));
 
 int
 main(int argc, char **argv) {
-	static int noopts;
-	static char *s;
-	static int c;
+    static int noopts;
+    static char *s;
+    static int c;
     setlocale(LC_ALL, "");
     msg_fp = stdout;
     trace_open();
@@ -85,36 +87,36 @@ main(int argc, char **argv) {
         ++argv;
         --argc;
         while ((c = *++s)) {
-			switch (c) {
-			case '-':
-				noopts = 1;
+            switch (c) {
+            case '-':
+                noopts = 1;
                 break;
-			case 'A':
-				ign_dir_perm = 1;
-				ign_link_time = 1;
-				/* fall through */
-			case 'a':
-				cmp_perm = 1;
-				cmp_time = 1;
-				cmp_usr  = 1;
-				cmp_grp  = 1;
-				break;
-			case 'C':
-				ign_cont = 1;
-				break;
+            case 'A':
+                ign_dir_perm = 1;
+                ign_link_time = 1;
+                /* fall through */
+            case 'a':
+                cmp_perm = 1;
+                cmp_time = 1;
+                cmp_usr  = 1;
+                cmp_grp  = 1;
+                break;
+            case 'C':
+                ign_cont = 1;
+                break;
             case 'D':
                 ign_dir_perm = 1;
                 break;
             case 'd':
-				cmp_depth = 1;
+                cmp_depth = 1;
                 if (!(c = *++s) && argc) {
                     s = *argv++;
                     --argc;
                     c = *s;
-				}
-				if (c < '0' || c > '9')
-					usage("Option -d needs a "
-					    "number as argument");
+                }
+                if (c < '0' || c > '9')
+                    usage("Option -d needs a "
+                          "number as argument");
                 depth = atoi(s);
                 goto next;
             case 'E':
@@ -123,15 +125,15 @@ main(int argc, char **argv) {
             case 'e':
                 exit_on_error = 1;
                 break;
-			case 'g':
-				cmp_grp  = 1;
-				break;
+            case 'g':
+                cmp_grp  = 1;
+                break;
             case 'H':
                 follow_cli_symlinks = 1;
                 break;
-			case 'L':
-				ign_link_time = 1;
-				break;
+            case 'L':
+                ign_link_time = 1;
+                break;
             case 'M':
                 if (!(c = *++s) && argc) {
                     s = *argv++;
@@ -148,60 +150,59 @@ main(int argc, char **argv) {
                     usage("Argument for option -M must be 0, 1, or 2");
                 }
                 goto next;
-			case 'm':
-				cmp_perm = 1;
-				break;
-			case 'o':
-				report_unexpect = 1;
-				break;
+            case 'm':
+                cmp_perm = 1;
+                break;
+            case 'o':
+                report_unexpect = 1;
+                break;
             case 'p':
                 progress = 1;
                 break;
             case 'q':
                 quiet = 1;
                 break;
+            case 'R':
+                use_mmap = 1;
+                break;
             case 's':
                 summary = 1;
                 break;
-			case 't':
-				cmp_time = 1;
-				break;
-			case 'u':
-				cmp_usr  = 1;
-				break;
-			case 'V':
-				printf("%s "VERSION"\n"
-				       "\tCompile option(s): "
-				    "use "
-#ifdef MMAP_MEMCMP
-				    "mmap"
-#else
-				    "read"
-#endif
-				    "(2) for compare, "
-#ifdef HAVE_LIBAVLBST
-				    "libavlbst"
-#else
-				    "tsearch"
-#endif
-				    "\n", prog);
-				exit(0);
+            case 't':
+                cmp_time = 1;
+                break;
+            case 'u':
+                cmp_usr  = 1;
+                break;
+            case 'V':
+                printf("%s "VERSION"\n"
+                                   "\tCompile option: "
+       #ifdef HAVE_LIBAVLBST
+                                   "libavlbst"
+       #else
+                                   "tsearch"
+       #endif
+                                   "\n", prog);
+                exit(0);
+            case 'v':
+                verbose = 1;
+                break;
             case 'W':
                 wait_flag = 1;
                 break;
-			default:
-				fprintf(stderr, "%s: Unknown option '%c'\n",
-				    prog, c);
-				usage(NULL);
-			}
-		}
+            default:
+                fprintf(stderr, "%s: Unknown option '%c'\n",
+                        prog, c);
+                usage(NULL);
+            }
+        }
 next:
         ;
-	}
-	if (argc != 2)
-		usage("Wrong number of arguments");
+    }
+    if (argc != 2)
+        usage("Wrong number of arguments");
 
-	args = argv;
+    args = argv;
 
     if (lstat(*argv, &stat1) == -1)
     {
@@ -220,7 +221,7 @@ next:
     }
 
     ini_path1len = path1len = strlen(path1);
-	argv++;
+    argv++;
 
     if (lstat(*argv, &stat2) == -1) {
         fprintf(stderr, "%s: lstat \"%s\" failed: %s\n", prog, *argv, strerror(errno));
@@ -234,8 +235,8 @@ next:
     else if (!realpath(*argv, path2))
     {
         fprintf(stderr, "%s: realpath \"%s\" failed: %s\n", prog, *argv, strerror(errno));
-		exit(EXIT_ERROR);
-	}
+        exit(EXIT_ERROR);
+    }
 
     path2len = strlen(path2);
 
@@ -258,17 +259,27 @@ next:
         return 0;
     }
 
-#ifdef MMAP_MEMCMP
-	errno = 0;
-	if ((pagesiz = sysconf(_SC_PAGESIZE)) == -1) {
-		fprintf(stderr, "%s: sysconf(_SC_PAGESIZE) failed: ", prog);
-		if (errno)
-			perror(NULL);
-		else
-			fputs("Not supported\n", stderr);
-		return EXIT_ERROR;
-	}
-#endif
+    if (use_mmap)
+    {
+        errno = 0;
+        if ((pagesiz = sysconf(_SC_PAGESIZE)) == -1) {
+            fprintf(stderr, "%s: sysconf(_SC_PAGESIZE) failed: ", prog);
+            if (errno)
+                perror(NULL);
+            else
+                fputs("Not supported\n", stderr);
+            return EXIT_ERROR;
+        }
+        pagesiz <<= 4; // 4K << 16 = 64K
+        if (verbose)
+        {
+            printf("Using page size %ld\n", pagesiz);
+        }
+    }
+    else
+    {
+        printf("Using buffer size %d\n", BUFF_SIZ);
+    }
     term_info_init();
     progress_init();
     output_init(prog, quiet, clear_progress_line, msg_fp);
@@ -283,9 +294,9 @@ next:
 }
 
 static void usage(const char *s) {
-	if (s)
+    if (s)
         fprintf(stderr, "%s: %s\n", prog, s);
-	exit(EXIT_ERROR);
+    exit(EXIT_ERROR);
 }
 
 void set_exit_diff(void) {

@@ -1,26 +1,19 @@
 1. Dependencies
 
-  It is suggested to install  the  speed  optimized  AVL  library
-  libavlbst.   Installation instructions are found on the project
-  page https://github.com/n-t-roff/libavlbst.
+  It  is  suggested  to  install  the speed optimized AVL library
+  libavlbst.  Installation instructions are found on the  project
+  page https://github.com/n‐t‐roff/libavlbst.
 
 
 2. Configuration
 
-  The installation  paths  can  be  configured  in  the  makefile
+  The  installation  paths  can  be  configured  in  the makefile
   "in.mk".  There are four paths configureable:
 
      BINDIR   Directory for the tool itself
      MANDIR   Directory for the man page
      INCDIR   Directory of the AVL library include files
      LIBDIR   Directory of the AVL library
-
-  Further it is possible to configure using  mmap(2)  instead  of
-  read(2) by removing the comment in the line
-
-     MMAP= #-DMMAP_MEMCMP
-
-  but normally read(2) is faster.
 
 
 3. Installation

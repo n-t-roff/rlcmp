@@ -41,5 +41,7 @@ extern short quiet;
 extern short exit_on_error;
 extern short ignore_missing;
 extern char wait_flag;
+extern char use_mmap;
+extern char verbose;
 
 #endif
