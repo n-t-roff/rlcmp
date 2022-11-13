@@ -62,14 +62,15 @@ int report_unexpect;
 int ign_dir_perm;
 int ign_link_time;
 FILE *msg_fp;
-short ign_cont;
-short quiet;
-short exit_on_error;
-short ignore_missing;
-short follow_cli_symlinks;
-char wait_flag;
-char use_mmap;
-char verbose;
+int ign_cont;
+int quiet;
+int exit_on_error;
+int ignore_missing;
+int follow_cli_symlinks;
+int wait_flag;
+int use_mmap;
+int verbose;
+int single_thread;
 
 static void usage(const char *) __attribute__ ((noreturn));
 
@@ -164,6 +165,9 @@ main(int argc, char **argv) {
                 break;
             case 'R':
                 use_mmap = 1;
+                break;
+            case 'S':
+                single_thread = 1;
                 break;
             case 's':
                 summary = 1;
@@ -270,7 +274,7 @@ next:
                 fputs("Not supported\n", stderr);
             return EXIT_ERROR;
         }
-        pagesiz <<= 4; // 4K << 16 = 64K
+        pagesiz <<= 3;
         if (verbose)
         {
             printf("Using page size %ld\n", pagesiz);

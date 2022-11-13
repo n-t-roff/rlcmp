@@ -20,7 +20,8 @@ _CFLAGS = \
 _LDFLAGS = \
 	$(LDFLAGS) $(__CLDBG) $(STRP) \
 	-L${LIBDIR} -Wl,-rpath,${LIBDIR} \
-	$(RPATH_CURSES) $(LIBDIR_CURSES)
+	$(RPATH_CURSES) $(LIBDIR_CURSES) \
+	-pthread  -lpthread
 LDADD = $(LIB_AVLBST) $(LIB_CURSES)
 
 all: $(BIN)

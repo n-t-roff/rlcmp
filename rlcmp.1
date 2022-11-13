@@ -1,4 +1,4 @@
-.Dd November 11, 2022
+.Dd November 13, 2022
 .Dt RLCMP 1
 .Sh NAME
 .Nm rlcmp
@@ -139,6 +139,16 @@ instead of
 .Xr read 2
 +
 .Xr memcmp 3 .
+Not recommended.
+.
+.It Fl S
+With option
+.Fl R :
+.Em don't
+use separate threads for
+.Xr mmap 2
+and
+.Xr memcpy 3 .
 .
 .It Fl s
 .

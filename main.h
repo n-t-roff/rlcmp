@@ -36,12 +36,13 @@ extern int report_unexpect;
 extern int ign_dir_perm;
 extern int ign_link_time;
 extern FILE *msg_fp;
-extern short ign_cont;
-extern short quiet;
-extern short exit_on_error;
-extern short ignore_missing;
-extern char wait_flag;
-extern char use_mmap;
-extern char verbose;
+extern int ign_cont;
+extern int quiet;
+extern int exit_on_error;
+extern int ignore_missing;
+extern int wait_flag;
+extern int use_mmap;
+extern int verbose;
+extern int single_thread;
 
 #endif
