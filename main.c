@@ -280,7 +280,7 @@ next:
             printf("Using page size %ld\n", pagesiz);
         }
     }
-    else
+    else if (verbose)
     {
         printf("Using buffer size %d\n", BUFF_SIZ);
     }
